@@ -9,5 +9,13 @@
 </head>
 <body>
     <h1>Welcome to Project SMS</h1>
+    <a href="/users">Manage Users</a>
+    <a href="/entities">Manage Entities</a>
+    <a href="/groups">Manage Groups</a>
+{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <span style="color:green;">{{ message }}</span>
+    </div>
+{% endfor %}
 </body>
 </html>

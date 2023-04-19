@@ -5,4 +5,6 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name="index"),
+    path('entities', views.entities, name="entities.index"),
+    path('add_entity', views.add_entity, name="add_entity"),
 ]
