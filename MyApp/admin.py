@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+# from MyApp.models import Entities
+#
+# # Register your models here.
+#
+# admin.site.register(Entities)
