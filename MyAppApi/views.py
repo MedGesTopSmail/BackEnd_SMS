@@ -14,8 +14,8 @@ from .serializers import EntitiesSerializer
 
 
 # Create your views here.
-def index(request):
-    return render(request, "layouts/index.html");
+def Index(request):
+    return render(request, 'Layouts/index.html')
 
 class EntitiesDetail(APIView):
     def get(self,request):
@@ -24,11 +24,63 @@ class EntitiesDetail(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self,request):
-        serializer = EntitiesSerializer(data=request, many=True)
+        serializer = EntitiesSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class EntitiesInfo(APIView):
+    def get(self, request, id):
+        try:
+            obj = Entities.objects.get(Entity_Id=id)
+        except Entities.DoesNotExist:
+            message = {"message":"not found"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+        serializer = EntitiesSerializer(obj)
+        return render(request, "Entities/index.html", {'entities': serializer.data})
+
+    def put(self,request,id):
+        try:
+            obj = Entities.objects.get(Entity_Id=id)
+        except Entities.DoesNotExist:
+            message = {"message": "not found error"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = EntitiesSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def patch(self,request, id):
+        try:
+            obj = Entities.objects.get(Entity_Id=id)
+        except Entities.DoesNotExist:
+            message = {"message": "not found error"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = EntitiesSerializer(obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self,request, id):
+        try:
+            obj = Entities.objects.get(Entity_Id=id)
+        except Entities.DoesNotExist:
+            message = {"message": "not found error"}
+            return Response(message, status=status.HTTP_404_NOT_FOUND)
+
+        obj.delete()
+        return Response({"message": "Entities Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
 
 # def entities(request):
 #     all_entities = Entities.objects.all()

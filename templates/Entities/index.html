@@ -5,38 +5,9 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Manage Entities</title>
+    <title>Entities</title>
 </head>
 <body>
-<a href="/add_entity">Add Entity</a>
-    <table>
-    <thead>
-        <tr>
-            <th>Id Entities</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entity in all_entities %}
-            <tr>
-                <th scope="row"> {{ entity.Entity_Id }} </th>
-                <th> {{ entity.Entity_Name }} </th>
-                <th> {{ entity.Entity_Description }} </th>
-                <th><a href="/edit_entity/{{ entity.Entity_Id }}" class="">Edit</a></th>
-                <th><a href="/delete_entity/{{ entity.Entity_Id }}" class="">Delete</a></th>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
-{% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        <span style="color:green;">{{ message }}</span>
-    </div>
-{% endfor %}
 </body>
-
 </html>

@@ -1,8 +1,7 @@
-"""
-URL configuration for Project_SMS project.
+"""Project_SMS URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+    https://docs.djangoproject.com/en/4.1/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -19,5 +18,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('MyApp.urls'))
+    path('', include('MyAppApi.urls'))
 ]
