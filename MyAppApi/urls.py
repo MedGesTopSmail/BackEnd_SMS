@@ -1,10 +1,11 @@
 from django.conf.urls.static import static
 from django.urls import path, include
+from . import views
 from Project_SMS import settings
-from .views import EntitiesDetail, EntitiesInfo, Index
+
 
 urlpatterns = [
-    path('', Index, name=""),
-    path('entities/', EntitiesDetail.as_view(), name="entities"),
-    path('entities/<int:id>', EntitiesInfo.as_view(), name="entities"),
+    path('', views.index, name='index'),
+    path('entities/', views.EntitiesDetail.as_view(), name='entity_list'),
+    path('entities/<int:id>/', views.EntitiesInfo.as_view(), name='delete_entity'),
 ]
