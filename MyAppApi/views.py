@@ -1,5 +1,6 @@
 from django.db import connection
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.contrib import messages
 import random
 import json
@@ -20,17 +21,15 @@ class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.all()
         serializer = serializers.EntitiesSerializer(obj, many=True)
-        entities_list = []
-        for entity in serializer.data:
-            entities_list.append(entity)
-        return Response(entities_list, status=status.HTTP_200_OK)
-
+        data = serializer.data
+        return JsonResponse(data, safe=False)
     def post(self, request):
         serializer = serializers.EntitiesSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            data = serializer.data
+            return JsonResponse(data, status=status.HTTP_201_CREATED)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EntitiesInfo(APIView):
@@ -39,44 +38,47 @@ class EntitiesInfo(APIView):
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.EntitiesSerializer(obj)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        return JsonResponse(data)
 
     def put(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.EntitiesSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            data = serializer.data
+            return JsonResponse(data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.EntitiesSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            data = serializer.data
+            return JsonResponse(data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
-        return Response({"message": "Entity Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse({"message": "Entity Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class GroupsDetail(APIView):
