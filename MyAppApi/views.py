@@ -378,3 +378,7 @@ class MessageInfo(APIView):
             return Response(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
         return Response({"message": "Message Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
+def MessageSend(request):
+    return render(request, 'Send_Message/index.html')

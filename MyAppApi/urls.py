@@ -24,4 +24,6 @@ urlpatterns = [
 
     path('message/', views.MessageDetail.as_view(), name='Message_Detail'),
     path('message/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
+
+    path('send_message/', views.MessageSend, name='Send_Message'),
 ]
