@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import random
 import json
+# import gammu
 from .models import Entities, Groups, Users, Number_List, Directory, Message
 from . import serializers
 from rest_framework.response import Response
@@ -19,7 +20,10 @@ class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.all()
         serializer = serializers.EntitiesSerializer(obj, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        entities_list = []
+        for entity in serializer.data:
+            entities_list.append(entity)
+        return Response(entities_list, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = serializers.EntitiesSerializer(data=request.data)
@@ -38,7 +42,6 @@ class EntitiesInfo(APIView):
             return Response(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.EntitiesSerializer(obj)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        # return render(request, "Entities/index.html", {'entities': serializer.data})
 
     def put(self, request, id):
         try:
@@ -379,6 +382,32 @@ class MessageInfo(APIView):
         obj.delete()
         return Response({"message": "Message Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-
+# Send Message with Gammu
 def MessageSend(request):
     return render(request, 'Send_Message/index.html')
+
+# class SMSAPIView(APIView):
+#     def post(self, request):
+#         recipient = request.data.get('recipient')
+#         message = request.data.get('message')
+#
+#         # Configuration de gammu
+#         sm = gammu.StateMachine()
+#         sm.ReadConfig()
+#         sm.Init()
+#
+#         # Envoi du SMS
+#         message = {
+#             'Text': message,
+#             'SMSC': {'Location': 1},
+#             'Number': recipient,
+#         }
+#         sm.SendSMS(message)
+#
+#         # Enregistrement dans la base de données
+#         sms = SMS.objects.create(
+#             recipient=recipient,
+#             message=message,
+#         )
+#
+#         return Response(status=status.HTTP_201_CREATED)
