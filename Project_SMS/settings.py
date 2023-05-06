@@ -83,17 +83,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_platform',
         'USER': 'root',
-        'PASSWORD': 'ov16@',
+        'PASSWORD': 'kuo8',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
     },
     'second_db': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_db',
         'USER': 'root',
-        'PASSWORD': 'ov16@',
+        'PASSWORD': 'kuo8',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
     }
 }
 
@@ -136,6 +136,9 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = (
     ('MyAppApi/static', 'MyAppApi/static/'),
 )
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 

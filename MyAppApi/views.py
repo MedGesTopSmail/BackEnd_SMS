@@ -11,6 +11,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+
+
 
 
 def index(request):
@@ -23,14 +29,18 @@ class EntitiesDetail(APIView):
         serializer = serializers.EntitiesSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
+
     def post(self, request):
         serializer = serializers.EntitiesSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "Entite " + data.get("Entity_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class EntitiesInfo(APIView):
     def get(self, request, id):
@@ -55,7 +65,11 @@ class EntitiesInfo(APIView):
         if serializer.is_valid():
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Entite " + data.get("Entity_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
@@ -69,7 +83,11 @@ class EntitiesInfo(APIView):
         if serializer.is_valid():
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Entite " + data.get("Entity_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
