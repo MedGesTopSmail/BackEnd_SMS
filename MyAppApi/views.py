@@ -97,7 +97,11 @@ class EntitiesInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
-        return JsonResponse({"message": "Entity Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        message = {
+            "type": "success",
+            "message": "Entite Supprimer avec succes",
+        }
+        return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
 
 
 class GroupsDetail(APIView):
