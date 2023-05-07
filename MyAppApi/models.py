@@ -90,9 +90,9 @@ class Directory_Number(models.Model):
 class Mailing_List(models.Model):
     Mailing_List_Id = models.AutoField(primary_key=True)
     Mailing_List_Name = models.CharField(max_length=500)
-    Mailing_List_Url = models.CharField(max_length=500)
-    Mailing_List_File = models.FileField(upload_to='Mailing List/')
-    created_at = models.DateTimeField(auto_now_add=True)
+    Mailing_List_File = models.CharField(max_length=500)
+    Mailing_List_Url = models.FileField(upload_to='MyAppApi/Static/Media/Files/Mailing_List/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_by = models.IntegerField(null=True, default=None)
     deleted_at = models.DateTimeField(null=True, default=None)

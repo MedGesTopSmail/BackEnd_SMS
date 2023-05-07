@@ -1,29 +1,20 @@
-from django.db import connection
+import os
+import sys
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib import messages
-import random
-import json
 # import gammu
-from .models import Entities, Groups, Users, Number_List, Directory, Message
+from .models import Entities, Groups, Users, Number_List, Directory, Message, Mailing_List
 from . import serializers
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework import status
-
-from django.core.paginator import Paginator
-from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-
-
+from django.views import View
+from .forms import MailingListForm
 
 
 def index(request):
     return render(request, 'Layouts/index.html')
 
 
-class EntitiesDetail(APIView):
+class EntitiesDetail(View):
     def get(self, request):
         obj = Entities.objects.all()
         serializer = serializers.EntitiesSerializer(obj, many=True)
@@ -42,7 +33,7 @@ class EntitiesDetail(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class EntitiesInfo(APIView):
+class EntitiesInfo(View):
     def get(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
@@ -104,7 +95,7 @@ class EntitiesInfo(APIView):
         return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
 
 
-class GroupsDetail(APIView):
+class GroupsDetail(View):
     def get(self, request):
         obj = Groups.objects.all()
         serializer = serializers.GroupsSerializer(obj, many=True)
@@ -120,7 +111,7 @@ class GroupsDetail(APIView):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GroupsInfo(APIView):
+class GroupsInfo(View):
     def get(self, request, id):
         try:
             obj = Groups.objects.get(Group_Id=id)
@@ -168,7 +159,7 @@ class GroupsInfo(APIView):
         obj.delete()
         return JsonResponse({"message": "Group Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-class UsersDetail(APIView):
+class UsersDetail(View):
     def get(self, request):
         obj = Users.objects.all()
         serializer = serializers.UsersSerializer(obj, many=True)
@@ -184,7 +175,7 @@ class UsersDetail(APIView):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UsersInfo(APIView):
+class UsersInfo(View):
     def get(self, request, id):
         try:
             obj = Users.objects.get(User_Id=id)
@@ -234,7 +225,7 @@ class UsersInfo(APIView):
         return JsonResponse({"message": "User Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class NumberListDetail(APIView):
+class NumberListDetail(View):
     def get(self, request):
         obj = Number_List.objects.all()
         serializer = serializers.NumberListSerializer(obj, many=True)
@@ -250,7 +241,7 @@ class NumberListDetail(APIView):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NumberListInfo(APIView):
+class NumberListInfo(View):
     def get(self, request, id):
         try:
             obj = Number_List.objects.get(Number_Id=id)
@@ -300,7 +291,7 @@ class NumberListInfo(APIView):
         return JsonResponse({"message": "Number Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class DirectoryDetail(APIView):
+class DirectoryDetail(View):
     def get(self, request):
         obj = Directory.objects.all()
         serializer = serializers.DirectorySerializer(obj, many=True)
@@ -316,7 +307,7 @@ class DirectoryDetail(APIView):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DirectoryInfo(APIView):
+class DirectoryInfo(View):
     def get(self, request, id):
         try:
             obj = Directory.objects.get(Directory_Id=id)
@@ -365,7 +356,7 @@ class DirectoryInfo(APIView):
         obj.delete()
         return JsonResponse({"message": "Directory Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-class MessageDetail(APIView):
+class MessageDetail(View):
     def get(self, request):
         obj = Message.objects.all()
         serializer = serializers.MessageSerializer(obj, many=True)
@@ -381,7 +372,7 @@ class MessageDetail(APIView):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MessageInfo(APIView):
+class MessageInfo(View):
     def get(self, request, id):
         try:
             obj = Message.objects.get(Message_Id=id)
@@ -434,28 +425,108 @@ class MessageInfo(APIView):
 def MessageSend(request):
     return render(request, 'Send_Message/index.html')
 
-# class SMSAPIView(APIView):
+
+# class SendSMS(View):
 #     def post(self, request):
-#         recipient = request.data.get('recipient')
-#         message = request.data.get('message')
+#         # Get the recipient number and message from the POST data
+#         recipient_number = request.POST.get('recipient_number')
+#         recipient_text = request.POST.get('recipient_text')
 #
-#         # Configuration de gammu
-#         sm = gammu.StateMachine()
-#         sm.ReadConfig()
-#         sm.Init()
+#         # Create object for talking with phone
+#         state_machine = gammu.StateMachine()
 #
-#         # Envoi du SMS
+#         # Optionally load config file as defined by first parameter
+#         if len(sys.argv) > 2:
+#             # Read the configuration from given file
+#             state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1' + sys.argv[1])
+#             # Remove file name from args list
+#             del sys.argv[1]
+#         else:
+#             # Read the configuration (~/.gammurc)
+#             state_machine.ReadConfig()
+#
+#         # Check parameters
+#         if not recipient_number:
+#             return JsonResponse("Please provide a recipient number.")
+#
+#         # Connect to the phone
+#         state_machine.Init()
+#
+#         # Prepare message data
+#         # We tell that we want to use first SMSC number stored in phone
 #         message = {
-#             'Text': message,
-#             'SMSC': {'Location': 1},
-#             'Number': recipient,
+#             "Text": recipient_text,
+#             "SMSC": {"Location": 1},
+#             "Number": recipient_number,
 #         }
-#         sm.SendSMS(message)
 #
-#         # Enregistrement dans la base de données
-#         sms = SMS.objects.create(
-#             recipient=recipient,
-#             message=message,
-#         )
+#         # Actually send the message
+#         state_machine.SendSMS(message)
 #
-#         return Response(status=status.HTTP_201_CREATED)
+#         return JsonResponse("SMS sent to {}".format(recipient_number))
+
+# class SendSMS_Multipart(View):
+#     def post(self, request):
+#         # Get the recipient number and message from the POST data
+#         recipient_number = request.POST.get('recipient_number')
+#         recipient_text = request.POST.get('recipient_text')
+#
+#         # Create object for talking with phone
+#         state_machine = gammu.StateMachine()
+#
+#         # Optionally load config file as defined by first parameter
+#         if len(sys.argv) > 2:
+#             # Read the configuration from given file
+#             state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1' + sys.argv[1])
+#             # Remove file name from args list
+#             del sys.argv[1]
+#         else:
+#             # Read the configuration (~/.gammurc)
+#             state_machine.ReadConfig()
+#
+#         # Check parameters
+#         if not recipient_number:
+#             return JsonResponse("Please provide a recipient number.")
+#
+#         # Connect to the phone
+#         state_machine.Init()
+#
+#         # Prepare message data
+#         # We tell that we want to use first SMSC number stored in phone
+#         message = {
+#             "Text": recipient_text,
+#             "SMSC": {"Location": 1},
+#             "Number": recipient_number,
+#         }
+#
+#         # Actually send the message
+#         state_machine.SendSMS(message)
+#
+#         return JsonResponse("SMS sent to {}".format(recipient_number))
+
+class UploadMailingLists(View):
+    def post(self, request):
+        form = MailingListForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the uploaded file
+            my_file = form.save(commit=False)
+            my_file.save()
+
+            # Update the URL field with the file's URL
+            my_file.Mailing_List_Name = request.POST['Mailing_List_Name']
+            my_file.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+            my_file.save()
+
+            # Return a JSON response with the file URL and a success message
+            message = {
+                'message': 'File Upload Successfully',
+                'file_url': my_file.Mailing_List_Url.url
+            }
+            return JsonResponse(message, status=status.HTTP_201_CREATED)
+        else:
+            # Return a JSON response with an error message
+            message = {
+                'message': 'Upload Fail',
+                'errors': form.errors.as_json()
+            }
+            return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)

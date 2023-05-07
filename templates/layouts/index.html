@@ -12,5 +12,12 @@
         <a href="{% url 'Directory_Detail' %}">Directory</a>
         <a href="{% url 'Message_Detail' %}">Message</a>
         <a href="{% url 'Send_Message' %}">Envoi de Message</a>
+    <h1>Upload a File</h1>
+    <form action="{% url 'Upload-MailingList' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="Mailing_List_Url" id="Mailing_List_Url">
+        <input type="text" name="Mailing_List_Name" id="Mailing_List_Name">
+        <button type="submit">Upload</button>
+    </form>
     </body>
 </html>
