@@ -38,7 +38,5 @@ urlpatterns = [
     path('send_message/', views.MessageSend, name='Send_Message'),
 
     # Generate Number For Row Table
-    path('entity_generate/', views.entity_generate, name='EntityNumber_Generate'),
-    path('group_generate/', views.group_generate, name='GroupNumber_Generate'),
-    path('user_generate/', views.user_generate, name='UserNumber_Generate'),
+    path('generate/<str:tag>', views.generate, name='Generate'),
 ]

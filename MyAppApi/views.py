@@ -20,32 +20,12 @@ def index(request):
     return render(request, 'Layouts/index.html')
 
 
-def entity_generate(self):
-    Entity_Number = f'ENT{random.randint(0, 9999):04}'
+def generate(self, tag):
+    Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
     while Entities.objects.filter(Entity_Number=Entity_Number).exists():
-        Entity_Number = f'ENT{random.randint(0, 9999):04}'
+        Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
     data = {
         "Entity_Number": Entity_Number,
-    }
-    return JsonResponse(data)
-
-
-def group_generate(self):
-    Group_Number = f'GR{random.randint(0, 9999):04}'
-    while Groups.objects.filter(Group_Number=Group_Number).exists():
-        Group_Number = f'GR{random.randint(0, 9999):04}'
-    data = {
-        "Group_Number": Group_Number,
-    }
-    return JsonResponse(data)
-
-
-def user_generate(self):
-    User_Number = f'USR{random.randint(0, 9999):04}'
-    while Users.objects.filter(User_Number=User_Number).exists():
-        User_Number = f'USR{random.randint(0, 9999):04}'
-    data = {
-        "User_Number": User_Number,
     }
     return JsonResponse(data)
 
