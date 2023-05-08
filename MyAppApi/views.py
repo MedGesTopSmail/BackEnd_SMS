@@ -1,5 +1,7 @@
 import os
 import sys
+import random
+
 from django.utils import timezone
 
 from django.shortcuts import render, redirect
@@ -18,6 +20,14 @@ def index(request):
     return render(request, 'Layouts/index.html')
 
 
+def generate(self):
+    Entity_Number = f'ENT{random.randint(0, 9999):04}'
+    while Entities.objects.filter(Entity_Number=Entity_Number).exists():
+        Entity_Number = f'ENT{random.randint(0, 9999):04}'
+    data = {
+        "Entity_Number": Entity_Number,
+    }
+    return JsonResponse(data)
 class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.filter(deleted_by__isnull=True)

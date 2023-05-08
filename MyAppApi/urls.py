@@ -28,4 +28,5 @@ urlpatterns = [
     path('upload-mailing/', views.UploadMailingLists.as_view(), name='Upload-MailingList'),
 
     path('send_message/', views.MessageSend, name='Send_Message'),
+    path('generate/', views.generate, name='Generate'),
 ]
