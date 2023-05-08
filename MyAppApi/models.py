@@ -18,17 +18,6 @@ class Entities(models.Model):
     class Meta:
         db_table = "entities"
 
-    # def save(self, *args, **kwargs):
-    #     if not self.pk:  # create a new enti
-    #         self.Entity_Number = self.generate_Entity_Number()
-    #     super(Entities, self).save(*args, **kwargs)
-    #
-    # def generate_Entity_Number(self):
-    #     Entity_Number = f'ENT{random.randint(0, 9999):04}'
-    #     while Entities.objects.filter(Entity_Number=Entity_Number).exists():
-    #         Entity_Number = f'ENT{random.randint(0, 9999):04}'
-    #     return Entity_Number
-
 
 class Groups(models.Model):
     Group_Id = models.AutoField(primary_key=True)

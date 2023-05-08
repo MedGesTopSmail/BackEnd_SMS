@@ -20,7 +20,7 @@ def index(request):
     return render(request, 'Layouts/index.html')
 
 
-def generate(self):
+def entity_generate(self):
     Entity_Number = f'ENT{random.randint(0, 9999):04}'
     while Entities.objects.filter(Entity_Number=Entity_Number).exists():
         Entity_Number = f'ENT{random.randint(0, 9999):04}'
@@ -28,6 +28,28 @@ def generate(self):
         "Entity_Number": Entity_Number,
     }
     return JsonResponse(data)
+
+
+def group_generate(self):
+    Group_Number = f'GR{random.randint(0, 9999):04}'
+    while Groups.objects.filter(Group_Number=Group_Number).exists():
+        Group_Number = f'GR{random.randint(0, 9999):04}'
+    data = {
+        "Group_Number": Group_Number,
+    }
+    return JsonResponse(data)
+
+
+def user_generate(self):
+    User_Number = f'USR{random.randint(0, 9999):04}'
+    while Users.objects.filter(User_Number=User_Number).exists():
+        User_Number = f'USR{random.randint(0, 9999):04}'
+    data = {
+        "User_Number": User_Number,
+    }
+    return JsonResponse(data)
+
+
 class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.filter(deleted_by__isnull=True)
@@ -47,6 +69,7 @@ class EntitiesDetail(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class EntitiesInfo(APIView):
     def get(self, request, id):
         try:
@@ -57,7 +80,6 @@ class EntitiesInfo(APIView):
         serializer = serializers.EntitiesSerializer(obj)
         data = serializer.data
         return JsonResponse(data, safe=False)
-
 
     def put(self, request, id):
         try:
@@ -175,6 +197,7 @@ class GroupsInfo(APIView):
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
         return JsonResponse({"message": "Group Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class UsersDetail(APIView):
     def get(self, request):
@@ -373,6 +396,7 @@ class DirectoryInfo(APIView):
         obj.delete()
         return JsonResponse({"message": "Directory Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
+
 class MessageDetail(APIView):
     def get(self, request):
         obj = Message.objects.filter(deleted_by__isnull=True)
@@ -437,6 +461,7 @@ class MessageInfo(APIView):
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
         return JsonResponse({"message": "Message Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
 
 # Send Message with Gammu
 def MessageSend(request):
