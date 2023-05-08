@@ -1,4 +1,5 @@
 from django.db import models
+import random
 
 
 # Create your models here.
@@ -6,7 +7,7 @@ from django.db import models
 # Create Table Entities
 class Entities(models.Model):
     Entity_Id = models.AutoField(primary_key=True)
-    Entity_Number = models.CharField(max_length=500)
+    Entity_Number = models.CharField(max_length=8, unique=True, editable=False)
     Entity_Name = models.CharField(max_length=500)
     Entity_Description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -16,6 +17,17 @@ class Entities(models.Model):
 
     class Meta:
         db_table = "entities"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # create a new enti
+            self.Entity_Number = self.generate_Entity_Number()
+        super(Entities, self).save(*args, **kwargs)
+
+    def generate_Entity_Number(self):
+        Entity_Number = f'ENT{random.randint(0, 9999):04}'
+        while Entities.objects.filter(Entity_Number=Entity_Number).exists():
+            Entity_Number = f'ENT{random.randint(0, 9999):04}'
+        return Entity_Number
 
 
 class Groups(models.Model):
