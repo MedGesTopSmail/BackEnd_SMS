@@ -1,12 +1,16 @@
 import os
 import sys
+from django.utils import timezone
+
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
+
 # import gammu
 from .models import Entities, Groups, Users, Number_List, Directory, Message, Mailing_List
 from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
-from django.views import View
 from .forms import MailingListForm
 
 
@@ -14,9 +18,9 @@ def index(request):
     return render(request, 'Layouts/index.html')
 
 
-class EntitiesDetail(View):
+class EntitiesDetail(APIView):
     def get(self, request):
-        obj = Entities.objects.all()
+        obj = Entities.objects.filter(deleted_by__isnull=True)
         serializer = serializers.EntitiesSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -33,7 +37,7 @@ class EntitiesDetail(View):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class EntitiesInfo(View):
+class EntitiesInfo(APIView):
     def get(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
@@ -81,13 +85,16 @@ class EntitiesInfo(View):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @csrf_exempt
     def delete(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        obj.delete()
+        obj.deleted_at = timezone.now()
+        obj.deleted_by = 1
+        obj.save()
         message = {
             "type": "success",
             "message": "Entite Supprimer avec succes",
@@ -95,9 +102,9 @@ class EntitiesInfo(View):
         return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
 
 
-class GroupsDetail(View):
+class GroupsDetail(APIView):
     def get(self, request):
-        obj = Groups.objects.all()
+        obj = Groups.objects.filter(deleted_by__isnull=True)
         serializer = serializers.GroupsSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -111,7 +118,7 @@ class GroupsDetail(View):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GroupsInfo(View):
+class GroupsInfo(APIView):
     def get(self, request, id):
         try:
             obj = Groups.objects.get(Group_Id=id)
@@ -159,9 +166,9 @@ class GroupsInfo(View):
         obj.delete()
         return JsonResponse({"message": "Group Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-class UsersDetail(View):
+class UsersDetail(APIView):
     def get(self, request):
-        obj = Users.objects.all()
+        obj = Users.objects.filter(deleted_by__isnull=True)
         serializer = serializers.UsersSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -175,7 +182,7 @@ class UsersDetail(View):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UsersInfo(View):
+class UsersInfo(APIView):
     def get(self, request, id):
         try:
             obj = Users.objects.get(User_Id=id)
@@ -225,9 +232,9 @@ class UsersInfo(View):
         return JsonResponse({"message": "User Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class NumberListDetail(View):
+class NumberListDetail(APIView):
     def get(self, request):
-        obj = Number_List.objects.all()
+        obj = Number_List.objects.filter(deleted_by__isnull=True)
         serializer = serializers.NumberListSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -241,7 +248,7 @@ class NumberListDetail(View):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NumberListInfo(View):
+class NumberListInfo(APIView):
     def get(self, request, id):
         try:
             obj = Number_List.objects.get(Number_Id=id)
@@ -291,9 +298,9 @@ class NumberListInfo(View):
         return JsonResponse({"message": "Number Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class DirectoryDetail(View):
+class DirectoryDetail(APIView):
     def get(self, request):
-        obj = Directory.objects.all()
+        obj = Directory.objects.filter(deleted_by__isnull=True)
         serializer = serializers.DirectorySerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -307,7 +314,7 @@ class DirectoryDetail(View):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DirectoryInfo(View):
+class DirectoryInfo(APIView):
     def get(self, request, id):
         try:
             obj = Directory.objects.get(Directory_Id=id)
@@ -356,9 +363,9 @@ class DirectoryInfo(View):
         obj.delete()
         return JsonResponse({"message": "Directory Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
-class MessageDetail(View):
+class MessageDetail(APIView):
     def get(self, request):
-        obj = Message.objects.all()
+        obj = Message.objects.filter(deleted_by__isnull=True)
         serializer = serializers.MessageSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
@@ -372,7 +379,7 @@ class MessageDetail(View):
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MessageInfo(View):
+class MessageInfo(APIView):
     def get(self, request, id):
         try:
             obj = Message.objects.get(Message_Id=id)
@@ -426,7 +433,7 @@ def MessageSend(request):
     return render(request, 'Send_Message/index.html')
 
 
-# class SendSMS(View):
+# class SendSMS(APIView):
 #     def post(self, request):
 #         # Get the recipient number and message from the POST data
 #         recipient_number = request.POST.get('recipient_number')
@@ -465,7 +472,7 @@ def MessageSend(request):
 #
 #         return JsonResponse("SMS sent to {}".format(recipient_number))
 
-# class SendSMS_Multipart(View):
+# class SendSMS_Multipart(APIView):
 #     def post(self, request):
 #         # Get the recipient number and message from the POST data
 #         recipient_number = request.POST.get('recipient_number')
@@ -504,7 +511,7 @@ def MessageSend(request):
 #
 #         return JsonResponse("SMS sent to {}".format(recipient_number))
 
-class UploadMailingLists(View):
+class UploadMailingLists(APIView):
     def post(self, request):
         form = MailingListForm(request.POST, request.FILES)
         if form.is_valid():
