@@ -40,6 +40,13 @@ class EntitiesDetail(APIView):
     def post(self, request):
         serializer = serializers.EntitiesSerializer(data=request.data)
         if serializer.is_valid():
+            entity_name = serializer.validated_data['Entity_Name']
+            if Entities.objects.filter(Entity_Name=entity_name).exists():
+                message = {
+                    "type": "error",
+                    "message": "Entite " + entity_name + " existe deja",
+                }
+                return JsonResponse(message, status=status.HTTP_409_CONFLICT)
             serializer.save()
             data = serializer.data
             message = {
