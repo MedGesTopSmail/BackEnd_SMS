@@ -77,6 +77,13 @@ class EntitiesInfo(APIView):
 
         serializer = serializers.EntitiesSerializer(obj, data=request.data)
         if serializer.is_valid():
+            entity_name = serializer.validated_data['Entity_Name']
+            if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Entite " + entity_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
@@ -95,6 +102,13 @@ class EntitiesInfo(APIView):
 
         serializer = serializers.EntitiesSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
+            entity_name = serializer.validated_data['Entity_Name']
+            if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Entite " + entity_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
@@ -131,6 +145,13 @@ class GroupsDetail(APIView):
     def post(self, request):
         serializer = serializers.GroupsSerializer(data=request.data)
         if serializer.is_valid():
+            group_name = serializer.validated_data['Group_Name']
+            if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Group " + group_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_201_CREATED)
@@ -157,6 +178,13 @@ class GroupsInfo(APIView):
 
         serializer = serializers.GroupsSerializer(obj, data=request.data)
         if serializer.is_valid():
+            group_name = serializer.validated_data['Group_Name']
+            if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Group " + group_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_200_OK)
@@ -171,6 +199,13 @@ class GroupsInfo(APIView):
 
         serializer = serializers.GroupsSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
+            group_name = serializer.validated_data['Group_Name']
+            if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Group " + group_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_200_OK)
@@ -196,6 +231,13 @@ class UsersDetail(APIView):
     def post(self, request):
         serializer = serializers.UsersSerializer(data=request.data)
         if serializer.is_valid():
+            user_name = serializer.validated_data['User_Name']
+            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "User " + user_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_201_CREATED)
@@ -223,6 +265,13 @@ class UsersInfo(APIView):
 
         serializer = serializers.UsersSerializer(obj, data=request.data)
         if serializer.is_valid():
+            user_name = serializer.validated_data['User_Name']
+            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "User " + user_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_200_OK)
@@ -237,6 +286,13 @@ class UsersInfo(APIView):
 
         serializer = serializers.UsersSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
+            user_name = serializer.validated_data['User_Name']
+            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "User " + user_name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             return JsonResponse(data, status=status.HTTP_200_OK)
