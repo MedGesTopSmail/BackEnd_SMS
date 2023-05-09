@@ -125,12 +125,13 @@ class EntitiesInfo(APIView):
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+        name = obj.get("Entity_Name")
         obj.deleted_at = timezone.now()
         obj.deleted_by = 1
         obj.save()
         message = {
             "type": "success",
-            "message": "Entite Supprimer avec succes",
+            "message": "Entite" + name + " Supprimer avec succes",
         }
         return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
 
@@ -154,7 +155,11 @@ class GroupsDetail(APIView):
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "Group " + data.get("Group_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -187,7 +192,11 @@ class GroupsInfo(APIView):
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Group " + data.get("Group_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
@@ -208,7 +217,11 @@ class GroupsInfo(APIView):
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Group " + data.get("Group_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
@@ -217,8 +230,14 @@ class GroupsInfo(APIView):
         except Groups.DoesNotExist:
             message = {"message": "Group not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        obj.delete()
-        return JsonResponse({"message": "Group Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        obj.deleted_at = timezone.now()
+        obj.deleted_by = 1
+        obj.save()
+        message = {
+            "type": "success",
+            "message": "Group" + obj.get("Group_Name") + " Supprimer avec succes",
+        }
+        return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
 
 
 class UsersDetail(APIView):
