@@ -487,7 +487,7 @@ def MessageSend(request):
 #
 #         return JsonResponse("SMS sent to {}".format(recipient_number))
 
-# class SendSMS_Multipart(APIView):
+# class SendSMS(APIView):
 #     def post(self, request):
 #         # Get the recipient number and message from the POST data
 #         recipient_number = request.POST.get('recipient_number')
@@ -514,17 +514,74 @@ def MessageSend(request):
 #         state_machine.Init()
 #
 #         # Prepare message data
-#         # We tell that we want to use first SMSC number stored in phone
-#         message = {
-#             "Text": recipient_text,
-#             "SMSC": {"Location": 1},
-#             "Number": recipient_number,
-#         }
+#         if len(recipient_text) <= 160:
+#             # Send a normal message if the message length is less than or equal to 160 characters
+#             message = {
+#                 "Text": recipient_text,
+#                 "SMSC": {"Location": 1},
+#                 "Number": recipient_number,
+#             }
+#             # Actually send the message
+#             state_machine.SendSMS(message)
+#         else:
+#             # Split the message into parts of 153 characters (GSM 7-bit encoding) or 134 characters (UCS2 encoding)
+#             parts = gammu.EncodeSMS(recipient_text, 1)
 #
-#         # Actually send the message
-#         state_machine.SendSMS(message)
+#             # Calculate the number of messages
+#             num_parts = len(parts)
+#
+#             # Initialize the current modem index to 0
+#             current_modem_index = 0
+#
+#             # Loop over the message parts and send them using the available modems
+#             for i, part in enumerate(parts):
+#                 # Prepare message data
+#                 message = {
+#                     "UDH": part[0],
+#                     "Text": part[1],
+#                     "SMSC": {"Location": 1},
+#                     "Number": recipient_number,
+#                 }
+#
+#                 # Get the list of available modems
+#                 modems = state_machine.GetConnectedGSMPhones()
+#
+#                 # Get the current modem
+#                 current_modem = modems[current_modem_index]
+#
+#                 # Actually send the message using the current modem
+#                 state_machine.SendSMS(message, current_modem)
+#
+#                 # Increment the current modem index and reset it to 0 if it exceeds the number of available modems
+#                 current_modem_index = (current_modem_index + 1) % len(modems)
 #
 #         return JsonResponse("SMS sent to {}".format(recipient_number))
+
+
+# def modem_status(request):
+#     sm = gammu.StateMachine()
+#     sm.ReadConfig()  # read the configuration file for Gammu
+#     sm.Init()  # initialize the state machine
+#
+#     state = sm.GetSMSStatus()  # get the SMS status of the phone
+#
+#     return JsonResponse(state)
+
+
+# def log_message(request):
+#     sm = gammu.StateMachine()
+#     sm.ReadConfig()  # read the configuration file for Gammu
+#     sm.Init()  # initialize the state machine
+#
+#     sent_items = sm.GetSMS(sentfolder=1, folder=0)  # get the sent items from the phone
+#
+#     items_data = []
+#     for item in sent_items:
+#         items_data.append(item)
+#
+#     return JsonResponse({'sent_items': items_data})
+
+
 
 class UploadMailingLists(APIView):
     def post(self, request):
