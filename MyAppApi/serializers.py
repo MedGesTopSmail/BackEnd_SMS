@@ -14,16 +14,16 @@ class GroupsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Groups
-        fields = ('Group_Id', 'Group_Number', 'Group_Name', 'Group_Description', 'Entity_Id', 'Entity')
+        fields = '__all__'
 
 
 
 class UsersSerializer(serializers.ModelSerializer):
-
+    Group_Id = serializers.PrimaryKeyRelatedField(queryset=Groups.objects.all(), source='Group', write_only=True)
+    Group = GroupsSerializer(read_only=True)
     class Meta:
         model = Users
         fields = '__all__'
-
 
 class NumberListSerializer(serializers.ModelSerializer):
     class Meta:
