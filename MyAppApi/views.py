@@ -167,7 +167,7 @@ class GroupsDetail(APIView):
 class GroupsInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Groups.objects.get(Group_Id=id)
+            obj = Groups.objects.get(Group_Id=id).prefetch_related('entities')
         except Groups.DoesNotExist:
             message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
