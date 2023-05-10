@@ -83,17 +83,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_platform',
         'USER': 'root',
-        'PASSWORD': 'kuo8',
+        'PASSWORD': 'ov16@',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
     },
     'second_db': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_db',
         'USER': 'root',
-        'PASSWORD': 'kuo8',
+        'PASSWORD': 'ov16@',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
     }
 }
 

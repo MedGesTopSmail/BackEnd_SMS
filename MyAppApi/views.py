@@ -20,13 +20,30 @@ def index(request):
     return render(request, 'Layouts/index.html')
 
 def generate(self, tag):
-    Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
-    while Entities.objects.filter(Entity_Number=Entity_Number).exists():
+    if tag.upper() == "ENT":
         Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
-    data = {
-        "Entity_Number": Entity_Number,
-    }
-    return JsonResponse(data)
+        while Entities.objects.filter(Entity_Number=Entity_Number).exists():
+            Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        data = {
+            "Entity_Number": Entity_Number,
+        }
+        return JsonResponse(data)
+    elif tag.upper() == "GR":
+        Group_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        while Groups.objects.filter(Group_Number=Group_Number).exists():
+            Group_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        data = {
+            "Group_Number": Group_Number,
+        }
+        return JsonResponse(data)
+    elif tag.upper() == "USR":
+        User_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        while Users.objects.filter(User_Number=User_Number).exists():
+            User_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        data = {
+            "User_Number": User_Number,
+        }
+        return JsonResponse(data)
 
 class EntitiesDetail(APIView):
     def get(self, request):
@@ -57,7 +74,7 @@ class EntitiesDetail(APIView):
 class EntitiesInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Entities.objects.get(Entity_Id=id)
+            obj = Entities.objects.filter(deleted_by__isnull=True).filter(deleted_by__isnull=True).get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entité non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
@@ -135,13 +152,10 @@ class EntitiesInfo(APIView):
 
 class GroupsDetail(APIView):
     def get(self, request):
-        obj_groups = Groups.objects.prefetch_related('Entity').filter(deleted_by__isnull=True)
-        obj_entities = Entities.objects.filter(deleted_by__isnull=True)
-        serializer_groups = serializers.GroupsSerializer(obj_groups, many=True)
-        serializer_entities = serializers.EntitiesSerializer(obj_entities, many=True)
-        data_groups = serializer_groups.data
-        data_entities = serializer_entities.data
-        data = {'groups': data_groups, 'entities': data_entities}
+        # obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True).values('Entity__Entity_Name')
+        obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True)
+        serializer = serializers.GroupsSerializer(obj_groups, many=True)
+        data = serializer.data
         return JsonResponse(data, safe=False)
 
     def post(self, request):
@@ -167,7 +181,7 @@ class GroupsDetail(APIView):
 class GroupsInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Groups.objects.prefetch_related('Entity').get(Group_Id=id)
+            obj = Groups.objects.prefetch_related('Entity').filter(deleted_by__isnull=True).get(Group_Id=id)
         except Groups.DoesNotExist:
             message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
@@ -271,7 +285,7 @@ class UsersDetail(APIView):
 class UsersInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Users.objects.get(User_Id=id)
+            obj = Users.objects.filter(deleted_by__isnull=True).get(User_Id=id)
         except Users.DoesNotExist:
             message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)

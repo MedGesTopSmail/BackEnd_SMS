@@ -9,12 +9,15 @@ class EntitiesSerializer(serializers.ModelSerializer):
 
 
 class GroupsSerializer(serializers.ModelSerializer):
+    Entity = EntitiesSerializer()
     class Meta:
         model = Groups
         fields = '__all__'
+        queryset = Entities.objects.all()
 
 
 class UsersSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Users
         fields = '__all__'
