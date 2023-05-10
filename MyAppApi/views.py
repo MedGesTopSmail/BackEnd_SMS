@@ -151,9 +151,11 @@ class EntitiesInfo(APIView):
 
 
 class GroupsDetail(APIView):
+    queryset = Groups.objects.filter(deleted_by__isnull=True).all()
     def get(self, request):
         # obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True).values('Entity__Entity_Name')
-        obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True)
+        # obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True)
+        obj_groups = self.queryset.all()
         serializer = serializers.GroupsSerializer(obj_groups, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)

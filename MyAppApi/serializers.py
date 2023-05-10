@@ -9,11 +9,13 @@ class EntitiesSerializer(serializers.ModelSerializer):
 
 
 class GroupsSerializer(serializers.ModelSerializer):
-    Entity = EntitiesSerializer()
+    Entity_Id = serializers.PrimaryKeyRelatedField(queryset=Entities.objects.all(), source='Entity', write_only=True)
+    Entity = EntitiesSerializer(read_only=True)
+
     class Meta:
         model = Groups
-        fields = '__all__'
-        queryset = Entities.objects.all()
+        fields = ('Group_Id', 'Group_Number', 'Group_Name', 'Group_Description', 'Entity_Id', 'Entity')
+
 
 
 class UsersSerializer(serializers.ModelSerializer):
