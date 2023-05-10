@@ -135,10 +135,10 @@ class EntitiesInfo(APIView):
 
 class GroupsDetail(APIView):
     def get(self, request):
-        obj_groups = Groups.objects.filter(deleted_by__isnull=True).prefetch_related('entities')
+        obj_groups = Groups.objects.prefetch_related('Entity').filter(deleted_by__isnull=True)
         obj_entities = Entities.objects.filter(deleted_by__isnull=True)
         serializer_groups = serializers.GroupsSerializer(obj_groups, many=True)
-        serializer_entities = serializers.GroupsSerializer(obj_entities, many=True)
+        serializer_entities = serializers.EntitiesSerializer(obj_entities, many=True)
         data_groups = serializer_groups.data
         data_entities = serializer_entities.data
         data = {'groups': data_groups, 'entities': data_entities}
@@ -167,7 +167,7 @@ class GroupsDetail(APIView):
 class GroupsInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Groups.objects.get(Group_Id=id).prefetch_related('entities')
+            obj = Groups.objects.prefetch_related('Entity').get(Group_Id=id)
         except Groups.DoesNotExist:
             message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
