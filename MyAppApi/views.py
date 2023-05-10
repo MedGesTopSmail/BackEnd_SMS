@@ -19,7 +19,6 @@ from .forms import MailingListForm
 def index(request):
     return render(request, 'Layouts/index.html')
 
-
 def generate(self, tag):
     Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
     while Entities.objects.filter(Entity_Number=Entity_Number).exists():
@@ -28,7 +27,6 @@ def generate(self, tag):
         "Entity_Number": Entity_Number,
     }
     return JsonResponse(data)
-
 
 class EntitiesDetail(APIView):
     def get(self, request):
@@ -44,25 +42,24 @@ class EntitiesDetail(APIView):
             if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "Entite " + entity_name + " existe deja",
+                    "message": "Entité " + entity_name + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
                 "type": "success",
-                "message": "Entite " + data.get("Entity_Name") + " ajouter avec succes",
+                "message": "Entité " + data.get("Entity_Name") + " ajouter avec succes",
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class EntitiesInfo(APIView):
     def get(self, request, id):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
-            message = {"message": "Entity not found"}
+            message = {"message": "Entité non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.EntitiesSerializer(obj)
         data = serializer.data
@@ -72,7 +69,7 @@ class EntitiesInfo(APIView):
         try:
             obj = Entities.objects.get(Entity_Id=id)
         except Entities.DoesNotExist:
-            message = {"message": "Entity not found"}
+            message = {"message": "Entité non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.EntitiesSerializer(obj, data=request.data)
@@ -81,14 +78,14 @@ class EntitiesInfo(APIView):
             if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "Entite " + entity_name + " existe deja",
+                    "message": "Entité " + entity_name + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
                 "type": "success",
-                "message": "Entite " + data.get("Entity_Name") + " modifier avec succes",
+                "message": "Entité " + data.get("Entity_Name") + " modifier avec succes",
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -106,14 +103,14 @@ class EntitiesInfo(APIView):
             if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "Entite " + entity_name + " existe deja",
+                    "message": "Entité " + entity_name + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
                 "type": "success",
-                "message": "Entite " + data.get("Entity_Name") + " modifier avec succes",
+                "message": "Entité " + data.get("Entity_Name") + " modifier avec succes",
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -125,15 +122,15 @@ class EntitiesInfo(APIView):
         except Entities.DoesNotExist:
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        name = obj.get("Entity_Name")
+        name = obj.Entity_Name
         obj.deleted_at = timezone.now()
         obj.deleted_by = 1
         obj.save()
         message = {
             "type": "success",
-            "message": "Entite" + name + " Supprimer avec succes",
+            "message": "Entite " + name + " Supprimer avec succes",
         }
-        return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(message)
 
 
 class GroupsDetail(APIView):
@@ -168,9 +165,9 @@ class GroupsInfo(APIView):
         try:
             obj = Groups.objects.get(Group_Id=id)
         except Groups.DoesNotExist:
-            message = {"message": "Group not found"}
+            message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers.GroupsSerializer(obj)
+        serializer = serializers.EntitiesSerializer(obj)
         data = serializer.data
         return JsonResponse(data, safe=False)
 
@@ -178,7 +175,7 @@ class GroupsInfo(APIView):
         try:
             obj = Groups.objects.get(Group_Id=id)
         except Groups.DoesNotExist:
-            message = {"message": "Group not found"}
+            message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.GroupsSerializer(obj, data=request.data)
@@ -198,7 +195,6 @@ class GroupsInfo(APIView):
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def patch(self, request, id):
         try:
             obj = Groups.objects.get(Group_Id=id)
@@ -224,21 +220,22 @@ class GroupsInfo(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @csrf_exempt
     def delete(self, request, id):
         try:
             obj = Groups.objects.get(Group_Id=id)
         except Groups.DoesNotExist:
             message = {"message": "Group not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+        name = obj.Group_Name
         obj.deleted_at = timezone.now()
         obj.deleted_by = 1
         obj.save()
         message = {
             "type": "success",
-            "message": "Group" + obj.get("Group_Name") + " Supprimer avec succes",
+            "message": "Group " + name + " Supprimer avec succes",
         }
-        return JsonResponse(message, status=status.HTTP_204_NO_CONTENT)
-
+        return JsonResponse(message)
 
 class UsersDetail(APIView):
     def get(self, request):
