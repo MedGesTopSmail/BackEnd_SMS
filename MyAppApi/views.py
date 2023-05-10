@@ -135,10 +135,13 @@ class EntitiesInfo(APIView):
 
 class GroupsDetail(APIView):
     def get(self, request):
-        obj = Groups.objects.filter(deleted_by__isnull=True)
-        serializer = serializers.GroupsSerializer(obj, many=True)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
+        obj_groups = Groups.objects.filter(deleted_by__isnull=True)
+        obj_entities = Entities.objects.filter(deleted_by__isnull=True)
+        serializer_groups = serializers.GroupsSerializer(obj_groups, many=True)
+        serializer_entities = serializers.GroupsSerializer(obj_entities, many=True)
+        data_groups = serializer_groups.data
+        data_entities = serializer_entities.data
+        return JsonResponse(data_groups,data_entities, safe=False)
 
     def post(self, request):
         serializer = serializers.GroupsSerializer(data=request.data)
@@ -167,7 +170,7 @@ class GroupsInfo(APIView):
         except Groups.DoesNotExist:
             message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers.EntitiesSerializer(obj)
+        serializer = serializers.GroupsSerializer(obj)
         data = serializer.data
         return JsonResponse(data, safe=False)
 
@@ -247,16 +250,20 @@ class UsersDetail(APIView):
     def post(self, request):
         serializer = serializers.UsersSerializer(data=request.data)
         if serializer.is_valid():
-            user_name = serializer.validated_data['User_Name']
-            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+            user_email = serializer.validated_data['User_Email']
+            if Users.objects.filter(User_Email=user_email).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "User " + user_name + " existe deja",
+                    "message": "Email User " + user_email + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "User " + data.get("User_First_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -265,63 +272,78 @@ class UsersInfo(APIView):
         try:
             obj = Users.objects.get(User_Id=id)
         except Users.DoesNotExist:
-            message = {"message": "User not found"}
+            message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.UsersSerializer(obj)
         data = serializer.data
         return JsonResponse(data, safe=False)
-        # return render(request, "Entities/index.html", {'entities': serializer.data})
 
     def put(self, request, id):
         try:
             obj = Users.objects.get(User_Id=id)
         except Users.DoesNotExist:
-            message = {"message": "User not found"}
+            message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.UsersSerializer(obj, data=request.data)
         if serializer.is_valid():
-            user_name = serializer.validated_data['User_Name']
-            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+            user_email = serializer.validated_data['User_Email']
+            if Users.objects.filter(User_Email=user_email).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "User " + user_name + " existe deja",
+                    "message": "Email User " + user_email + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "User " + data.get("User_First_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
         try:
             obj = Users.objects.get(User_Id=id)
         except Users.DoesNotExist:
-            message = {"message": "User not found"}
+            message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.UsersSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
-            user_name = serializer.validated_data['User_Name']
-            if Users.objects.filter(User_Name=user_name).filter(deleted_by__isnull=True).exists():
+            user_email = serializer.validated_data['User_Email']
+            if Users.objects.filter(User_Email=user_email).filter(deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
-                    "message": "User " + user_name + " existe deja",
+                    "message": "Email User " + user_email + " existe deja",
                 }
                 return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "User " + data.get("User_First_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @csrf_exempt
     def delete(self, request, id):
         try:
             obj = Users.objects.get(User_Id=id)
         except Users.DoesNotExist:
-            message = {"message": "not found error"}
+            message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        obj.delete()
-        return JsonResponse({"message": "User Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        name = obj.User_First_Name
+        obj.deleted_at = timezone.now()
+        obj.deleted_by = 1
+        obj.save()
+        message = {
+            "type": "success",
+            "message": "User " + name + " Supprimer avec succes",
+        }
+        return JsonResponse(message)
 
 
 class NumberListDetail(APIView):
