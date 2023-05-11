@@ -92,12 +92,13 @@ class EntitiesInfo(APIView):
         serializer = serializers.EntitiesSerializer(obj, data=request.data)
         if serializer.is_valid():
             entity_name = serializer.validated_data['Entity_Name']
-            if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Entité " + entity_name + " existe deja",
-                }
-                return JsonResponse(message)
+            if obj.Entity_Name != request.data['Entity_Name']:
+                if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Entité " + entity_name + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
@@ -117,12 +118,13 @@ class EntitiesInfo(APIView):
         serializer = serializers.EntitiesSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             entity_name = serializer.validated_data['Entity_Name']
-            if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Entité " + entity_name + " existe deja",
-                }
-                return JsonResponse(message)
+            if obj.Entity_Name != request.data['Entity_Name']:
+                if Entities.objects.filter(Entity_Name=entity_name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Entité " + entity_name + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
@@ -201,12 +203,13 @@ class GroupsInfo(APIView):
         serializer = serializers.GroupsSerializer(obj, data=request.data)
         if serializer.is_valid():
             group_name = serializer.validated_data['Group_Name']
-            if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Group " + group_name + " existe deja",
-                }
-                return JsonResponse(message)
+            if obj.Group_Name != request.data['Group_Name']:
+                if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Group " + group_name + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
@@ -225,12 +228,13 @@ class GroupsInfo(APIView):
         serializer = serializers.GroupsSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             group_name = serializer.validated_data['Group_Name']
-            if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Group " + group_name + " existe deja",
-                }
-                return JsonResponse(message)
+            if obj.Group_Name != request.data['Group_Name']:
+                if Groups.objects.filter(Group_Name=group_name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Group " + group_name + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
