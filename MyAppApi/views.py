@@ -731,3 +731,18 @@ class UploadMailingLists(APIView):
                 'errors': form.errors.as_json()
             }
             return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
+
+# class Authenticate(auth):
+#     def login(self, request, username=None, password=None, **kwargs):
+#         Users = get_user_model()
+#         try:
+#             user = Users.objects.get(User_Email=username)
+#         except Users.DoesNotExist:
+#             return None
+#         else:
+#             if user.check_password(password):
+#                 return user
+#         return None
+#
+#     def logout(self, request):
+#         logout(request)
