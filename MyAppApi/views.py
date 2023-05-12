@@ -309,12 +309,13 @@ class UsersInfo(APIView):
         serializer = serializers.UsersSerializer(obj, data=request.data)
         if serializer.is_valid():
             user_email = serializer.validated_data['User_Email']
-            if Users.objects.filter(User_Email=user_email).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Email User " + user_email + " existe deja",
-                }
-                return JsonResponse(message)
+            if obj.User_Email != request.data['User_Email']:
+                if Users.objects.filter(User_Email=user_email).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Email User " + user_email + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {

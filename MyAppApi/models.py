@@ -37,20 +37,21 @@ class Groups(models.Model):
 class Users(models.Model):
     ROLE_CHOICES = (
         ('Member', 'Member'),
-        ('Admin', 'Admin')
+        ('Administrateur', 'Administrateur')
+        # ('Super Administrateur', 'Super Administrateur')
     )
-    PERMISSION_CHOICES = (
-        ('Add', 'Add'),
-        ('View', 'View'),
-        ('Edit', 'Edit'),
-        ('Delete', 'Delete')
-    )
+    # PERMISSION_CHOICES = (
+    #     ('Add', 'Add'),
+    #     ('View', 'View'),
+    #     ('Edit', 'Edit'),
+    #     ('Delete', 'Delete')
+    # )
     User_Id = models.AutoField(primary_key=True)
     User_Number = models.CharField(max_length=500)
     User_First_Name = models.CharField(max_length=500)
     User_Last_Name = models.CharField(max_length=500)
     User_Role = models.CharField(max_length=500, choices=ROLE_CHOICES)
-    User_Permissions = models.CharField(max_length=500, choices=PERMISSION_CHOICES)
+    # User_Permissions = models.CharField(max_length=500, choices=PERMISSION_CHOICES)
     User_Email = models.CharField(max_length=500)
     User_Password = models.CharField(max_length=500)
     Group = models.ForeignKey(Groups, on_delete=models.CASCADE)
