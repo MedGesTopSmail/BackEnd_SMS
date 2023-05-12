@@ -14,8 +14,6 @@ from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
 from .forms import MailingListForm
-import bcrypt
-import base64
 
 def index(request):
     return render(request, 'Layouts/index.html')

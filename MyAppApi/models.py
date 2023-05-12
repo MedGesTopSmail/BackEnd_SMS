@@ -1,7 +1,8 @@
+import base64
+
 from django.db import models
 import random
 from django.contrib.auth.hashers import make_password
-import base64
 
 
 # Create your models here.
@@ -65,6 +66,13 @@ class Users(models.Model):
 
     class Meta:
         db_table = "users"
+
+    def save(self, *args, **kwargs):
+        # Hash the password in make_password and save it to User_Password field
+        self.User_Password = make_password(self.User_Password)
+        # Encode the hashed password in base64 and save it to User_Password_Crypt field
+        self.User_Password_Crypt = base64.b64encode(self.User_Password.encode())
+        super(Users, self).save(*args, **kwargs)
 
 
 class Number_List(models.Model):
