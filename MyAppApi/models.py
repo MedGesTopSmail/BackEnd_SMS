@@ -1,5 +1,7 @@
 from django.db import models
 import random
+from django.contrib.auth.hashers import make_password
+import base64
 
 
 # Create your models here.
@@ -54,6 +56,7 @@ class Users(models.Model):
     # User_Permissions = models.CharField(max_length=500, choices=PERMISSION_CHOICES)
     User_Email = models.CharField(max_length=500)
     User_Password = models.CharField(max_length=500)
+    User_Password_Crypt = models.CharField(max_length=500)
     Group = models.ForeignKey(Groups, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

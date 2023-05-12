@@ -75,6 +75,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Project_SMS.wsgi.application'
 
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher',
+]
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -83,17 +93,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_platform',
         'USER': 'root',
-        'PASSWORD': 'kuo8',
+        'PASSWORD': 'ov16@',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
     },
     'second_db': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_db',
         'USER': 'root',
-        'PASSWORD': 'kuo8',
+        'PASSWORD': 'ov16@',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
     }
 }
 

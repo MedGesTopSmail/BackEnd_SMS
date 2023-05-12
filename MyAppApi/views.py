@@ -14,7 +14,8 @@ from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
 from .forms import MailingListForm
-
+import bcrypt
+import base64
 
 def index(request):
     return render(request, 'Layouts/index.html')
@@ -278,7 +279,15 @@ class UsersDetail(APIView):
                     "message": "Email User " + user_email + " existe deja",
                 }
                 return JsonResponse(message)
-            serializer.save()
+            # Save the user instance to database
+            user_instance = serializer.save()
+
+            # Hash the password and save it to User_Password_crypt field
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(user_instance.User_Password.encode(), salt)
+            user_instance.User_Password_Crypt = base64.b64encode(hashed_password).decode()
+            user_instance.save()
+
             data = serializer.data
             message = {
                 "type": "success",
