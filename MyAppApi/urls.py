@@ -20,16 +20,16 @@ urlpatterns = [
     path('users/<int:id>/', views.UsersInfo.as_view(), name='Users_Info'),
 
     # CRUD NumberList
-    path('number_list/', views.NumberListDetail.as_view(), name='Number_Detail'),
-    path('number_list/<int:id>/', views.NumberListInfo.as_view(), name='Number_Info'),
+    path('numbers/', views.NumberListDetail.as_view(), name='Number_Detail'),
+    path('numbers/<int:id>/', views.NumberListInfo.as_view(), name='Number_Info'),
 
     # CRUD Directory
-    path('directory/', views.DirectoryDetail.as_view(), name='Directory_Detail'),
-    path('directory/<int:id>/', views.DirectoryInfo.as_view(), name='Directory_Info'),
+    path('directories/', views.DirectoryDetail.as_view(), name='Directory_Detail'),
+    path('directories/<int:id>/', views.DirectoryInfo.as_view(), name='Directory_Info'),
 
     # CRUD Message
-    path('message/', views.MessageDetail.as_view(), name='Message_Detail'),
-    path('message/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
+    path('messages/', views.MessageDetail.as_view(), name='Message_Detail'),
+    path('messages/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
 
     # Upload Mailing List
     path('upload-mailing/', views.UploadMailingLists.as_view(), name='Upload-MailingList'),

@@ -378,16 +378,27 @@ class NumberListDetail(APIView):
     def post(self, request):
         serializer = serializers.NumberListSerializer(data=request.data)
         if serializer.is_valid():
+            Number = serializer.validated_data['Number']
+            if Number_List.objects.filter(Number=Number).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Numéro " + Number + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "Numéro " + data.get("Number_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NumberListInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Number_List.objects.get(Number_Id=id)
+            obj = Number_List.objects.filter(deleted_by__isnull=True).get(Number_Id=id)
         except Number_List.DoesNotExist:
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
@@ -405,9 +416,21 @@ class NumberListInfo(APIView):
 
         serializer = serializers.NumberListSerializer(obj, data=request.data)
         if serializer.is_valid():
+            Number = serializer.validated_data['Number']
+            if obj.Number != request.data['Number']:
+                if Number_List.objects.filter(Number=Number).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Numéro " + Number + " existe deja",
+                    }
+                    return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Numéro " + data.get("Number_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
@@ -427,11 +450,18 @@ class NumberListInfo(APIView):
     def delete(self, request, id):
         try:
             obj = Number_List.objects.get(Number_Id=id)
+            name = obj.Number_Name
+            obj.deleted_at = timezone.now()
+            obj.deleted_by = 1
+            obj.save()
+            message = {
+                "type": "success",
+                "message": "Numero " + name + " Supprimer avec succes",
+            }
+            return JsonResponse(message)
         except Number_List.DoesNotExist:
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        obj.delete()
-        return JsonResponse({"message": "Number Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class DirectoryDetail(APIView):
@@ -446,7 +476,11 @@ class DirectoryDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "Numéro " + data.get("Directory_Name") + " ajouter avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
