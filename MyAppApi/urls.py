@@ -31,6 +31,10 @@ urlpatterns = [
     path('messages/', views.MessageDetail.as_view(), name='Message_Detail'),
     path('messages/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
 
+    # CRUD Message
+    path('mailing_list/', views.Mailing_ListDetail.as_view(), name='Mailing_ListDetail'),
+    path('mailing_list/<int:id>/', views.Mailing_ListInfo.as_view(), name='Mailing_ListInfo'),
+
     # Upload Mailing List
     path('upload-mailing/', views.UploadMailingLists.as_view(), name='Upload-MailingList'),
 
