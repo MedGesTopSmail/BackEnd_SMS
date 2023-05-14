@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Entities, Groups, Users, Number_List, Directory, Message
+from .models import Entities, Groups, Users, Number_List, Directory, Message, Mailing_List
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -37,6 +37,11 @@ class DirectorySerializer(serializers.ModelSerializer):
         model = Directory
         fields = '__all__'
 
+
+class Mailing_ListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mailing_List
+        fields = '__all__'
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
