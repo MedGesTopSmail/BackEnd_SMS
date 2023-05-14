@@ -92,6 +92,7 @@ class Number_List(models.Model):
 class Directory(models.Model):
     Directory_Id = models.AutoField(primary_key=True)
     Directory_Name = models.CharField(max_length=500)
+    Directory_Number = models.CharField(max_length=500)
     Directory_Description = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

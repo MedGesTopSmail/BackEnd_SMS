@@ -43,6 +43,14 @@ def generate(self, tag):
             "User_Number": User_Number,
         }
         return JsonResponse(data)
+    elif tag.upper() == "DRC":
+        Directory_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        while Users.objects.filter(Directory_Number=Directory_Number).exists():
+         Directory_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        data = {
+            "Directory_Number": Directory_Number,
+        }
+        return JsonResponse(data)
 
 class EntitiesDetail(APIView):
     def get(self, request):
