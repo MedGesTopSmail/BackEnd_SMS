@@ -57,7 +57,7 @@ class Users(models.Model):
     # User_Permissions = models.CharField(max_length=500, choices=PERMISSION_CHOICES)
     User_Email = models.CharField(max_length=500)
     User_Password = models.CharField(max_length=500)
-    User_Password_Crypt = models.CharField(max_length=500)
+    # User_Password_Crypt = models.CharField(max_length=500)
     Group = models.ForeignKey(Groups, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,7 +71,7 @@ class Users(models.Model):
         # Hash the password in make_password and save it to User_Password field
         self.User_Password = make_password(self.User_Password)
         # Encode the hashed password in base64 and save it to User_Password_Crypt field
-        self.User_Password_Crypt = base64.b64encode(self.User_Password.encode())
+        # self.User_Password_Crypt = make_password(self.User_Password)
         super(Users, self).save(*args, **kwargs)
 
 

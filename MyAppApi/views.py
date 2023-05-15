@@ -45,8 +45,8 @@ def generate(self, tag):
         return JsonResponse(data)
     elif tag.upper() == "DRC":
         Directory_Number = tag.upper() + f'{random.randint(0, 9999):04}'
-        while Users.objects.filter(Directory_Number=Directory_Number).exists():
-         Directory_Number = tag.upper() + f'{random.randint(0, 9999):04}'
+        while Directory.objects.filter(Directory_Number=Directory_Number).exists():
+            Directory_Number = tag.upper() + f'{random.randint(0, 9999):04}'
         data = {
             "Directory_Number": Directory_Number,
         }
@@ -81,7 +81,7 @@ class EntitiesDetail(APIView):
 class EntitiesInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Entities.objects.filter(deleted_by__isnull=True).filter(deleted_by__isnull=True).get(Entity_Id=id)
+            obj = Entities.objects.filter(deleted_by__isnull=True).get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entité non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
@@ -91,7 +91,7 @@ class EntitiesInfo(APIView):
 
     def put(self, request, id):
         try:
-            obj = Entities.objects.get(Entity_Id=id)
+            obj = Entities.objects.filter(deleted_by__isnull=True).get(Entity_Id=id)
         except Entities.DoesNotExist:
             message = {"message": "Entité non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
@@ -162,8 +162,6 @@ class EntitiesInfo(APIView):
 class GroupsDetail(APIView):
     queryset = Groups.objects.filter(deleted_by__isnull=True).all()
     def get(self, request):
-        # obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True).values('Entity__Entity_Name')
-        # obj_groups = Groups.objects.select_related('Entity').filter(deleted_by__isnull=True)
         obj_groups = self.queryset.all()
         serializer = serializers.GroupsSerializer(obj_groups, many=True)
         data = serializer.data
@@ -482,11 +480,18 @@ class DirectoryDetail(APIView):
     def post(self, request):
         serializer = serializers.DirectorySerializer(data=request.data)
         if serializer.is_valid():
+            directory_name = serializer.validated_data['Directory_Name']
+            if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Répertoire " + directory_name + " existe déjà",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
             message = {
                 "type": "success",
-                "message": "Numéro " + data.get("Directory_Name") + " ajouter avec succes",
+                "message": "Répertoire " + data.get("Directory_Name") + " ajouté avec succes",
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -495,27 +500,37 @@ class DirectoryDetail(APIView):
 class DirectoryInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Directory.objects.get(Directory_Id=id)
+            obj = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
         except Directory.DoesNotExist:
-            message = {"message": "Directory not found"}
+            message = {"message": "Directory non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.DirectorySerializer(obj)
         data = serializer.data
         return JsonResponse(data, safe=False)
-        # return render(request, "Entities/index.html", {'entities': serializer.data})
 
     def put(self, request, id):
         try:
-            obj = Directory.objects.get(Directory_Id=id)
+            obj = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
         except Directory.DoesNotExist:
-            message = {"message": "Directory not found"}
+            message = {"message": "Directory non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.DirectorySerializer(obj, data=request.data)
         if serializer.is_valid():
+            directory_name = serializer.validated_data['Directory_Name']
+            if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Répertoire " + directory_name + " existe déjà",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
@@ -527,9 +542,20 @@ class DirectoryInfo(APIView):
 
         serializer = serializers.DirectorySerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
+            directory_name = serializer.validated_data['Directory_Name']
+            if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Répertoire " + directory_name + " existe déjà",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
+            message = {
+                "type": "success",
+                "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
@@ -539,8 +565,128 @@ class DirectoryInfo(APIView):
             message = {"message": "Directory not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         obj.delete()
-        return JsonResponse({"message": "Directory Deleted"}, status=status.HTTP_204_NO_CONTENT)
+        name = obj.Directory_Name
+        obj.deleted_at = timezone.now()
+        obj.deleted_by = 1
+        obj.save()
+        message = {
+            "type": "success",
+            "message": "Répertoire " + name + " Supprimer avec succes",
+        }
+        return JsonResponse(message)
 
+class Mailing_ListDetail(APIView):
+    def get(self, request):
+        obj = Mailing_List.objects.filter(deleted_by__isnull=True)
+        serializer = serializers.Mailing_ListSerializer(obj, many=True)
+        data = serializer.data
+        return JsonResponse(data, safe=False)
+
+    def post(self, request):
+        form = MailingListForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the uploaded file
+            my_file = form.save(commit=False)
+            my_file.save()
+
+            # Update the URL field with the file's URL
+            my_file.Mailing_List_Name = request.POST['Mailing_List_Name']
+            my_file.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+            my_file.save()
+
+            # Return a JSON response with the file URL and a success message
+            message = {
+                'message': 'File Upload Successfully',
+                'file_url': my_file.Mailing_List_Url.url
+            }
+            return JsonResponse(message, status=status.HTTP_201_CREATED)
+        else:
+            # Return a JSON response with an error message
+            message = {
+                'message': 'Upload Fail',
+                'errors': form.errors.as_json()
+            }
+            return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
+
+class Mailing_ListInfo(APIView):
+    def get(self, request, id):
+        try:
+            obj = Mailing_List.objects.filter(deleted_by__isnull=True).filter(deleted_by__isnull=True).get(Mailing_List_Id=id)
+        except Mailing_List.DoesNotExist:
+            message = {"message": "Entité non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+        serializer = serializers.Mailing_ListSerializer(obj)
+        data = serializer.data
+        return JsonResponse(data, safe=False)
+
+    def put(self, request, id):
+        try:
+            obj = Mailing_List.objects.get(Mailing_List_Id=id)
+        except Mailing_List.DoesNotExist:
+            message = {"message": "Entité non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
+            if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
+                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Entité " + Mailing_List_Name + " existe deja",
+                    }
+                    return JsonResponse(message)
+            serializer.save()
+            data = serializer.data
+            message = {
+                "type": "success",
+                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, id):
+        try:
+            obj = Mailing_List.objects.get(Mailing_List_Id=id)
+        except Mailing_List.DoesNotExist:
+            message = {"message": "Entity not found"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.Mailing_ListSerializer(obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
+            if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
+                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Entité " + Mailing_List_Name + " existe deja",
+                    }
+                    return JsonResponse(message)
+            serializer.save()
+            data = serializer.data
+            message = {
+                "type": "success",
+                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
+            }
+            return JsonResponse(message)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @csrf_exempt
+    def delete(self, request, id):
+        try:
+            obj = Mailing_List.objects.get(Mailing_List_Id=id)
+        except Mailing_List.DoesNotExist:
+            message = {"message": "Entity not found"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+        name = obj.Mailing_List_Name
+        obj.deleted_at = timezone.now()
+        obj.deleted_by = 1
+        obj.save()
+        message = {
+            "type": "success",
+            "message": "Entite " + name + " Supprimer avec succes",
+        }
+        return JsonResponse(message)
 
 class MessageDetail(APIView):
     def get(self, request):
@@ -749,111 +895,7 @@ def MessageSend(request):
 
 
 # Mailing list View
-class Mailing_ListDetail(APIView):
-    def get(self, request):
-        obj = Mailing_List.objects.filter(deleted_by__isnull=True)
-        serializer = serializers.Mailing_ListSerializer(obj, many=True)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
 
-    def post(self, request):
-        serializer = serializers.Mailing_ListSerializer(data=request.data)
-        if serializer.is_valid():
-            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-            if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
-                message = {
-                    "type": "error",
-                    "message": "Entité " + Mailing_List_Name + " existe deja",
-                }
-                return JsonResponse(message)
-            serializer.save()
-            data = serializer.data
-            message = {
-                "type": "success",
-                "message": "Entité " + data.get("Mailing_List_Name") + " ajouter avec succes",
-            }
-            return JsonResponse(message)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class Mailing_ListInfo(APIView):
-    def get(self, request, id):
-        try:
-            obj = Mailing_List.objects.filter(deleted_by__isnull=True).filter(deleted_by__isnull=True).get(Mailing_List_Id=id)
-        except Mailing_List.DoesNotExist:
-            message = {"message": "Entité non trouver"}
-            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers.Mailing_ListSerializer(obj)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
-
-    def put(self, request, id):
-        try:
-            obj = Mailing_List.objects.get(Mailing_List_Id=id)
-        except Mailing_List.DoesNotExist:
-            message = {"message": "Entité non trouver"}
-            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
-        if serializer.is_valid():
-            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-            if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
-                    message = {
-                        "type": "error",
-                        "message": "Entité " + Mailing_List_Name + " existe deja",
-                    }
-                    return JsonResponse(message)
-            serializer.save()
-            data = serializer.data
-            message = {
-                "type": "success",
-                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
-            }
-            return JsonResponse(message)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, id):
-        try:
-            obj = Mailing_List.objects.get(Mailing_List_Id=id)
-        except Mailing_List.DoesNotExist:
-            message = {"message": "Entity not found"}
-            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = serializers.Mailing_ListSerializer(obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-            if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
-                    message = {
-                        "type": "error",
-                        "message": "Entité " + Mailing_List_Name + " existe deja",
-                    }
-                    return JsonResponse(message)
-            serializer.save()
-            data = serializer.data
-            message = {
-                "type": "success",
-                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
-            }
-            return JsonResponse(message)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @csrf_exempt
-    def delete(self, request, id):
-        try:
-            obj = Mailing_List.objects.get(Mailing_List_Id=id)
-        except Mailing_List.DoesNotExist:
-            message = {"message": "Entity not found"}
-            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        name = obj.Mailing_List_Name
-        obj.deleted_at = timezone.now()
-        obj.deleted_by = 1
-        obj.save()
-        message = {
-            "type": "success",
-            "message": "Entite " + name + " Supprimer avec succes",
-        }
-        return JsonResponse(message)
 
 class UploadMailingLists(APIView):
     def post(self, request):
