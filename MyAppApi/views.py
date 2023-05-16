@@ -74,6 +74,7 @@ class EntitiesDetail(APIView):
             message = {
                 "type": "success",
                 "message": "Entité " + data.get("Entity_Name") + " ajouter avec succes",
+                "id": data.get("Entity_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -111,6 +112,7 @@ class EntitiesInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Entité " + data.get("Entity_Name") + " modifier avec succes",
+                "id": data.get("Entity_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -137,6 +139,7 @@ class EntitiesInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Entité " + data.get("Entity_Name") + " modifier avec succes",
+                "id": data.get("Entity_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +185,7 @@ class GroupsDetail(APIView):
             message = {
                 "type": "success",
                 "message": "Group " + data.get("Group_Name") + " ajouter avec succes",
+                "id": data.get("Group_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -220,6 +224,7 @@ class GroupsInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Group " + data.get("Group_Name") + " modifier avec succes",
+                "id": data.get("Group_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -245,6 +250,7 @@ class GroupsInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Group " + data.get("Group_Name") + " modifier avec succes",
+                "id": data.get("Group_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -289,6 +295,7 @@ class UsersDetail(APIView):
             message = {
                 "type": "success",
                 "message": "User " + data.get("User_First_Name") + " ajouter avec succes",
+                "id": data.get("User_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -327,6 +334,7 @@ class UsersInfo(APIView):
             message = {
                 "type": "success",
                 "message": "User " + data.get("User_First_Name") + " modifier avec succes",
+                "id": data.get("User_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -352,6 +360,7 @@ class UsersInfo(APIView):
             message = {
                 "type": "success",
                 "message": "User " + data.get("User_First_Name") + " modifier avec succes",
+                "id": data.get("User_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -396,6 +405,7 @@ class NumberListDetail(APIView):
             message = {
                 "type": "success",
                 "message": "Numéro " + data.get("Number_Name") + " ajouter avec succes",
+                "id": data.get("Number_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -435,6 +445,7 @@ class NumberListInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Numéro " + data.get("Number_Name") + " ajouter avec succes",
+                "id": data.get("Number_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -492,6 +503,7 @@ class DirectoryDetail(APIView):
             message = {
                 "type": "success",
                 "message": "Répertoire " + data.get("Directory_Name") + " ajouté avec succes",
+                "id": data.get("Directory_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -529,6 +541,7 @@ class DirectoryInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
+                "id": data.get("Directory_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -554,6 +567,7 @@ class DirectoryInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
+                "id": data.get("Directory_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -641,6 +655,7 @@ class Mailing_ListInfo(APIView):
             message = {
                 "type": "success",
                 "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
+                "id": data.get("Mailing_List_Id")
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
