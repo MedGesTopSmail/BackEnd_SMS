@@ -28,8 +28,8 @@ urlpatterns = [
     path('directories/<int:id>/', views.DirectoryInfo.as_view(), name='Directory_Info'),
 
     # CRUD Message
-    path('messages/', views.MessageDetail.as_view(), name='Message_Detail'),
-    path('messages/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
+    path('predefined_message/', views.MessageDetail.as_view(), name='Message_Detail'),
+    path('predefined_message/<int:id>/', views.MessageInfo.as_view(), name='Message_Info'),
 
     # CRUD Message
     path('mailing_list/', views.Mailing_ListDetail.as_view(), name='Mailing_ListDetail'),

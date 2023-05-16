@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Entities, Groups, Users, Number_List, Directory, Message, Mailing_List
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -38,12 +38,24 @@ class DirectorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RelationDirectoryNumberSerializer(serializers.ModelSerializer):
+    Number_Id = serializers.PrimaryKeyRelatedField(queryset=Number_List.objects.all(), source='Number', write_only=True)
+    Number = NumberListSerializer(read_only=True)
+
+    Directory_Id = serializers.PrimaryKeyRelatedField(queryset=Directory.objects.all(), source='Directory', write_only=True)
+    Directory = DirectorySerializer(read_only=True)
+
+    class Meta:
+        model = Relation_Directory_Number
+        fields = '__all__'
+
+
 class Mailing_ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mailing_List
         fields = '__all__'
 
-class MessageSerializer(serializers.ModelSerializer):
+class Predefined_MessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Message
+        model = Predefined_Message
         fields = '__all__'

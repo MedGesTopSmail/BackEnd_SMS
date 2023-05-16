@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 
 # import gammu
-from .models import Entities, Groups, Users, Number_List, Directory, Message, Mailing_List
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List
 from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
@@ -489,7 +489,7 @@ class DirectoryDetail(APIView):
         return JsonResponse(data, safe=False)
 
     def post(self, request):
-        serializer = serializers.DirectorySerializer(data=request.data)
+        serializer = serializers.DirectorySerializer(data=request.data.get("directory"))
         if serializer.is_valid():
             directory_name = serializer.validated_data['Directory_Name']
             if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
@@ -499,13 +499,23 @@ class DirectoryDetail(APIView):
                 }
                 return JsonResponse(message)
             serializer.save()
-            data = serializer.data
+            data_directory = serializer.data
+
+            directory_id = data_directory.get("Directory_Id")
+            lists = request.data.get("numbers")
+            for number in lists:
+                ResultSet = {"Directory_Id": directory_id, "Number_Id": number}
+                serializer2 = serializers.RelationDirectoryNumberSerializer(data=ResultSet)
+                if serializer2.is_valid():
+                    serializer2.save()
+
             message = {
                 "type": "success",
-                "message": "Répertoire " + data.get("Directory_Name") + " ajouté avec succes",
-                "id": data.get("Directory_Id")
+                "message": "Répertoire " + data_directory.get("Directory_Name") + " ajouté avec succes",
+                "id": data_directory.get("Directory_Id")
             }
             return JsonResponse(message)
+
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -610,8 +620,8 @@ class Mailing_ListDetail(APIView):
 
             # Return a JSON response with the file URL and a success message
             message = {
-                'message': 'File Upload Successfully',
-                'file_url': my_file.Mailing_List_Url.url
+                "type": "success",
+                "message": "Liste " + my_file.Mailing_List_File + " ajouter avec succes"
             }
             return JsonResponse(message, status=status.HTTP_201_CREATED)
         else:
@@ -625,9 +635,9 @@ class Mailing_ListDetail(APIView):
 class Mailing_ListInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Mailing_List.objects.filter(deleted_by__isnull=True).filter(deleted_by__isnull=True).get(Mailing_List_Id=id)
+            obj = Mailing_List.objects.filter(deleted_by__isnull=True).get(Mailing_List_Id=id)
         except Mailing_List.DoesNotExist:
-            message = {"message": "Entité non trouver"}
+            message = {"message": "Liste non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
         serializer = serializers.Mailing_ListSerializer(obj)
         data = serializer.data
@@ -705,69 +715,110 @@ class Mailing_ListInfo(APIView):
 
 class MessageDetail(APIView):
     def get(self, request):
-        obj = Message.objects.filter(deleted_by__isnull=True)
-        serializer = serializers.MessageSerializer(obj, many=True)
+        obj = Predefined_Message.objects.filter(deleted_by__isnull=True)
+        serializer = serializers.Predefined_MessageSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
 
     def post(self, request):
-        serializer = serializers.MessageSerializer(data=request.data)
+        serializer = serializers.Predefined_MessageSerializer(data=request.data)
         if serializer.is_valid():
+            Message_Name = serializer.validated_data['Message_Name']
+            if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Nom Message " + Message_Name + " existe deja",
+                }
+                return JsonResponse(message)
             serializer.save()
             data = serializer.data
-            return JsonResponse(data, status=status.HTTP_201_CREATED)
+            message = {
+                "type": "success",
+                "message": "Message " + data.get("Message_Name") + " ajouter avec succes",
+                "id": data.get("Message_Id")
+            }
+            return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class MessageInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Message.objects.get(Message_Id=id)
-        except Message.DoesNotExist:
-            message = {"message": "Message not found"}
+            obj = Predefined_Message.objects.get(Message_Id=id)
+            serializer = serializers.Predefined_MessageSerializer(obj)
+            data = serializer.data
+            return JsonResponse(data, safe=False)
+        except Predefined_Message.DoesNotExist:
+            message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers.MessageSerializer(obj)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
-        # return render(request, "Entities/index.html", {'entities': serializer.data})
+
 
     def put(self, request, id):
         try:
-            obj = Message.objects.get(Message_Id=id)
-        except Message.DoesNotExist:
+            obj = Predefined_Message.objects.get(Message_Id=id)
+            serializer = serializers.Predefined_MessageSerializer(obj, data=request.data)
+            if serializer.is_valid():
+                Message_Name = serializer.validated_data['Message_Name']
+                if obj.Message_Name != request.data['Message_Name']:
+                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(
+                            deleted_by__isnull=True).exists():
+                        message = {
+                            "type": "error",
+                            "message": "Nom Message " + Message_Name + " existe deja",
+                        }
+                        return JsonResponse(message)
+                serializer.save()
+                data = serializer.data
+                message = {
+                    "type": "success",
+                    "message": "Message " + data.get("Message_Name") + " ajouter avec succes",
+                    "id": data.get("Message_Id")
+                }
+                return JsonResponse(message)
+        except Predefined_Message.DoesNotExist:
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = serializers.MessageSerializer(obj, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
         try:
-            obj = Message.objects.get(Message_Id=id)
-        except Message.DoesNotExist:
+            obj = Predefined_Message.objects.get(Message_Id=id)
+            serializer = serializers.Predefined_MessageSerializer(obj, data=request.data, partial=True)
+            if serializer.is_valid():
+                Message_Name = serializer.validated_data['Message_Name']
+                if obj.Message_Name != request.data['Message_Name']:
+                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(
+                            deleted_by__isnull=True).exists():
+                        message = {
+                            "type": "error",
+                            "message": "Nom Message " + Message_Name + " existe deja",
+                        }
+                        return JsonResponse(message)
+                serializer.save()
+                data = serializer.data
+                message = {
+                    "type": "success",
+                    "message": "Message " + data.get("Message_Name") + " ajouter avec succes",
+                    "id": data.get("Message_Id")
+                }
+                return JsonResponse(message)
+        except Predefined_Message.DoesNotExist:
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = serializers.MessageSerializer(obj, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            data = serializer.data
-            return JsonResponse(data, status=status.HTTP_200_OK)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
         try:
-            obj = Message.objects.get(Message_Id=id)
-        except Message.DoesNotExist:
+            obj = Predefined_Message.objects.get(Message_Id=id)
+            name = obj.Message_Name
+            obj.deleted_at = timezone.now()
+            obj.deleted_by = 1
+            obj.save()
+            message = {
+                "type": "success",
+                "message": "Message " + name + " Supprimer avec succes",
+            }
+            return JsonResponse(message)
+        except Predefined_Message.DoesNotExist:
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-        obj.delete()
-        return JsonResponse({"message": "Message Deleted"}, status=status.HTTP_204_NO_CONTENT)
-
 
 # Send Message with Gammu
 def MessageSend(request):

@@ -103,13 +103,17 @@ class Directory(models.Model):
         db_table = "directory"
 
 
-class Directory_Number(models.Model):
+class Relation_Directory_Number(models.Model):
+    Relation_Id = models.AutoField(primary_key=True)
     Directory = models.ForeignKey(Directory, on_delete=models.CASCADE)
     Number = models.ForeignKey(Number_List, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_by = models.IntegerField(null=True, default=None)
+    deleted_at = models.DateTimeField(null=True, default=None)
 
     class Meta:
-        db_table = "directory_number"
-        unique_together = ('Directory', 'Number',)
+        db_table = "relation_directory_number"
 
 
 class Mailing_List(models.Model):
@@ -126,19 +130,18 @@ class Mailing_List(models.Model):
         db_table = "mailing_list"
 
 
-class Message(models.Model):
+class Predefined_Message(models.Model):
     Message_Id = models.AutoField(primary_key=True)
     Message_Name = models.CharField(max_length=500)
     Message_Text = models.CharField(max_length=500)
     Message_Language = models.CharField(max_length=500)
-    User = models.ForeignKey(Users, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_by = models.IntegerField(null=True, default=None)
     deleted_at = models.DateTimeField(null=True, default=None)
 
     class Meta:
-        db_table = "message"
+        db_table = "predefined_message"
 
 
 class Log_Message(models.Model):
