@@ -611,6 +611,15 @@ class Mailing_ListDetail(APIView):
     def post(self, request):
         serializer = Mailing_ListSerializer(data=request.data)
         if serializer.is_valid():
+            file = request.FILES.get('Mailing_List_Url')
+            if file:
+                ext = os.path.splitext(file.name)[1]
+                if ext.lower() != '.csv':
+                    message = {
+                        "type": "error",
+                        "message": "Liste doit etre un fichier .csv"
+                    }
+                    return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             # Return a JSON response with the file URL and a success message
             message = {
