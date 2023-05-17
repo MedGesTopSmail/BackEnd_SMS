@@ -619,7 +619,7 @@ class Mailing_ListDetail(APIView):
                         "type": "error",
                         "message": "Liste doit etre un fichier .csv"
                     }
-                    return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse(message)
             serializer.save()
             # Return a JSON response with the file URL and a success message
             message = {
