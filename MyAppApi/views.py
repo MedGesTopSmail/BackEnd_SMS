@@ -644,54 +644,59 @@ class Mailing_ListInfo(APIView):
         try:
             obj = Mailing_List.objects.get(Mailing_List_Id=id)
         except Mailing_List.DoesNotExist:
-            message = {"message": "Entité non trouver"}
+            message = {"message": "Liste d'envoi non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
         if serializer.is_valid():
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
+                if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
                     message = {
                         "type": "error",
-                        "message": "Entité " + Mailing_List_Name + " existe deja",
+                        "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
                     }
                     return JsonResponse(message)
-            serializer.save()
-            data = serializer.data
+
+            mailing_list = serializer.save()
+            mailing_list.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+            mailing_list.save()
+
+            # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
-                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
-                "id": data.get("Mailing_List_Id")
+                "message": "Liste ajouter avec succes"
             }
             return JsonResponse(message)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, id):
         try:
             obj = Mailing_List.objects.get(Mailing_List_Id=id)
         except Mailing_List.DoesNotExist:
-            message = {"message": "Entity not found"}
+            message = {"message": "Liste d'envoi non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = serializers.Mailing_ListSerializer(obj, data=request.data, partial=True)
+        serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
         if serializer.is_valid():
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(deleted_by__isnull=True).exists():
+                if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
                     message = {
                         "type": "error",
-                        "message": "Entité " + Mailing_List_Name + " existe deja",
+                        "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
                     }
                     return JsonResponse(message)
-            serializer.save()
-            data = serializer.data
+
+            mailing_list = serializer.save()
+            mailing_list.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+            mailing_list.save()
+
+            # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
-                "message": "Entité " + data.get("Mailing_List_Name") + " modifier avec succes",
+                "message": "Liste ajouter avec succes"
             }
             return JsonResponse(message)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @csrf_exempt
     def delete(self, request, id):
