@@ -649,8 +649,11 @@ class Mailing_ListInfo(APIView):
 
         serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
         if serializer.is_valid():
+
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
+
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
+
                 if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
                     message = {
                         "type": "error",
@@ -678,8 +681,11 @@ class Mailing_ListInfo(APIView):
 
         serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
         if serializer.is_valid():
+
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
+
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
+
                 if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
                     message = {
                         "type": "error",
