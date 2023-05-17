@@ -53,7 +53,7 @@ class RelationDirectoryNumberSerializer(serializers.ModelSerializer):
 class Mailing_ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mailing_List
-        fields = ('Mailing_List_Name', 'Mailing_List_Url')
+        fields = '__all__'
 
 
 class Predefined_MessageSerializer(serializers.ModelSerializer):
