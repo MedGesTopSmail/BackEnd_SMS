@@ -616,7 +616,7 @@ class Mailing_ListDetail(APIView):
             # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
-                "message": "Liste " + my_file.Mailing_List_File + " ajoutée avec succès"
+                "message": "Liste ajouter avec succes"
             }
             return JsonResponse(message, status=status.HTTP_201_CREATED)
         else:
