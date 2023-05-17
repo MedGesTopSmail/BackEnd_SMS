@@ -771,7 +771,7 @@ class MessageInfo(APIView):
                 data = serializer.data
                 message = {
                     "type": "success",
-                    "message": "Message " + data.get("Message_Name") + " ajouter avec succes",
+                    "message": "Message " + data.get("Message_Name") + " modifier avec succes",
                     "id": data.get("Message_Id")
                 }
                 return JsonResponse(message)
@@ -797,7 +797,7 @@ class MessageInfo(APIView):
                 data = serializer.data
                 message = {
                     "type": "success",
-                    "message": "Message " + data.get("Message_Name") + " ajouter avec succes",
+                    "message": "Message " + data.get("Message_Name") + " modifier avec succes",
                     "id": data.get("Message_Id")
                 }
                 return JsonResponse(message)
