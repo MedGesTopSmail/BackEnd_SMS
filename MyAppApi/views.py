@@ -14,6 +14,8 @@ from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
 from .forms import MailingListForm
+from .serializers import Mailing_ListSerializer
+
 
 def index(request):
     return render(request, 'Layouts/index.html')
@@ -607,28 +609,21 @@ class Mailing_ListDetail(APIView):
         return JsonResponse(data, safe=False)
 
     def post(self, request):
-        form = MailingListForm(request.POST, request.FILES)
-        if form.is_valid():
-            # Save the uploaded file
-            my_file = form.save(commit=False)
-            my_file.save()
-
-            # Update the URL field with the file's URL
-            my_file.Mailing_List_Name = request.POST['Mailing_List_Name']
-            my_file.Mailing_List_File = request.FILES['Mailing_List_Url'].name
-            my_file.save()
+        serializer = Mailing_ListSerializer(data=request.data)
+        if serializer.is_valid():
+            my_file = serializer.save()
 
             # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
-                "message": "Liste " + my_file.Mailing_List_File + " ajouter avec succes"
+                "message": "Liste " + my_file.Mailing_List_File + " ajoutée avec succès"
             }
             return JsonResponse(message, status=status.HTTP_201_CREATED)
         else:
             # Return a JSON response with an error message
             message = {
-                'message': 'Upload Fail',
-                'errors': form.errors.as_json()
+                'message': 'error',
+                'errors': serializer.errors
             }
             return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
 
@@ -964,31 +959,24 @@ def MessageSend(request):
 
 
 class UploadMailingLists(APIView):
-    def post(self, request):
-        form = MailingListForm(request.POST, request.FILES)
-        if form.is_valid():
-            # Save the uploaded file
-            my_file = form.save(commit=False)
-            my_file.save()
+     def post(self, request):
+         serializer = Mailing_ListSerializer(data=request.data)
+         if serializer.is_valid():
+             my_file = serializer.save()
 
-            # Update the URL field with the file's URL
-            my_file.Mailing_List_Name = request.POST['Mailing_List_Name']
-            my_file.Mailing_List_File = request.FILES['Mailing_List_Url'].name
-            my_file.save()
-
-            # Return a JSON response with the file URL and a success message
-            message = {
-                'message': 'File Upload Successfully',
-                'file_url': my_file.Mailing_List_Url.url
-            }
-            return JsonResponse(message, status=status.HTTP_201_CREATED)
-        else:
-            # Return a JSON response with an error message
-            message = {
-                'message': 'Upload Fail',
-                'errors': form.errors.as_json()
-            }
-            return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
+             # Return a JSON response with the file URL and a success message
+             message = {
+                 "type": "success",
+                 "message": "Liste ajouter avec succes"
+             }
+             return JsonResponse(message, status=status.HTTP_201_CREATED)
+         else:
+             # Return a JSON response with an error message
+             message = {
+                 'message': 'error',
+                 'errors': serializer.errors
+             }
+             return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
 
 # class Authenticate(auth):
 #     def login(self, request, username=None, password=None, **kwargs):
