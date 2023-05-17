@@ -611,7 +611,9 @@ class Mailing_ListDetail(APIView):
     def post(self, request):
         serializer = Mailing_ListSerializer(data=request.data)
         if serializer.is_valid():
-            my_file = serializer.save()
+            mailing_list = serializer.save()
+            mailing_list.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+            mailing_list.save()
 
             # Return a JSON response with the file URL and a success message
             message = {
@@ -962,7 +964,9 @@ class UploadMailingLists(APIView):
      def post(self, request):
          serializer = Mailing_ListSerializer(data=request.data)
          if serializer.is_valid():
-             my_file = serializer.save()
+             mailing_list = serializer.save()
+             mailing_list.Mailing_List_File = request.FILES['Mailing_List_Url'].name
+             mailing_list.save()
 
              # Return a JSON response with the file URL and a success message
              message = {
