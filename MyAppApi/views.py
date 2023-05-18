@@ -611,6 +611,7 @@ class Mailing_ListDetail(APIView):
     def post(self, request):
         serializer = Mailing_ListSerializer(data=request.data)
         if serializer.is_valid():
+            # Check the type of file (.csv)
             file = request.FILES.get('Mailing_List_Url')
             if file:
                 ext = os.path.splitext(file.name)[1]
@@ -657,7 +658,7 @@ class Mailing_ListInfo(APIView):
         if serializer.is_valid():
 
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-
+            file = request.FILES.get('Mailing_List_Url')
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
 
                 if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
@@ -666,9 +667,16 @@ class Mailing_ListInfo(APIView):
                         "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
                     }
                     return JsonResponse(message)
-
+            # Check the type of file (.csv)
+            if file:
+                ext = os.path.splitext(file.name)[1]
+                if ext.lower() != '.csv':
+                    message = {
+                        "type": "warning",
+                        "message": "Liste doit etre un fichier .csv"
+                    }
+                    return JsonResponse(message)
             serializer.save()
-
             # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
@@ -685,20 +693,25 @@ class Mailing_ListInfo(APIView):
 
         serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
         if serializer.is_valid():
-
             Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-
+            file = request.FILES.get('Mailing_List_Url')
             if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-
                 if Mailing_List.objects.filter(deleted_by__isnull=True).exists():
                     message = {
                         "type": "error",
                         "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
                     }
                     return JsonResponse(message)
-
+            # Check the type of file (.csv)
+            if file:
+                ext = os.path.splitext(file.name)[1]
+                if ext.lower() != '.csv':
+                    message = {
+                        "type": "warning",
+                        "message": "Liste doit etre un fichier .csv"
+                    }
+                    return JsonResponse(message)
             serializer.save()
-
             # Return a JSON response with the file URL and a success message
             message = {
                 "type": "success",
