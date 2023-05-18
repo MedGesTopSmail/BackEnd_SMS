@@ -1,19 +1,16 @@
 import os
 import sys
+# import gammu
 import random
-
 from django.utils import timezone
-
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-
-# import gammu
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
+    Relation_Directory_Number
 from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
-from .forms import MailingListForm
 from .serializers import Mailing_ListSerializer
 
 
@@ -529,12 +526,16 @@ class DirectoryDetail(APIView):
 class DirectoryInfo(APIView):
     def get(self, request, id):
         try:
-            obj = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
-            serializer = serializers.DirectorySerializer(obj)
-            data = serializer.data
-            return JsonResponse(data, safe=False)
+            directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
+            relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory).values_list('Number', flat=True)
+
+            data = {
+                "directory": serializers.DirectorySerializer(directory).data,
+                "list_numbers": list(relation_numbers)
+            }
+            return JsonResponse(data)
         except Directory.DoesNotExist:
-            message = {"message": "Directory non trouver"}
+            message = {"message": "Directory non trouvé"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, id):

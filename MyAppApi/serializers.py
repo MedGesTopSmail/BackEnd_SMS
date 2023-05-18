@@ -42,9 +42,6 @@ class RelationDirectoryNumberSerializer(serializers.ModelSerializer):
     Number_Id = serializers.PrimaryKeyRelatedField(queryset=Number_List.objects.all(), source='Number', write_only=True)
     Number = NumberListSerializer(read_only=True)
 
-    Directory_Id = serializers.PrimaryKeyRelatedField(queryset=Directory.objects.all(), source='Directory', write_only=True)
-    Directory = DirectorySerializer(read_only=True)
-
     class Meta:
         model = Relation_Directory_Number
         fields = '__all__'
