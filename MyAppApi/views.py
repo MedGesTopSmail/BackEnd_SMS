@@ -514,7 +514,6 @@ class DirectoryDetail(APIView):
                 serializer2 = serializers.RelationDirectoryNumberSerializer(data=ResultSet)
                 if serializer2.is_valid():
                     serializer2.save()
-
             message = {
                 "type": "success",
                 "message": "Répertoire " + data_directory.get("Directory_Name") + " ajouté avec succes",
