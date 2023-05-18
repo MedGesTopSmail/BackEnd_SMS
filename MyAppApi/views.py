@@ -616,7 +616,7 @@ class Mailing_ListDetail(APIView):
                 ext = os.path.splitext(file.name)[1]
                 if ext.lower() != '.csv':
                     message = {
-                        "type": "error",
+                        "type": "warning",
                         "message": "Liste doit etre un fichier .csv"
                     }
                     return JsonResponse(message)
