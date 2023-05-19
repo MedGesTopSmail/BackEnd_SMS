@@ -157,8 +157,6 @@ class EntitiesInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
-
 class GroupsDetail(APIView):
     queryset = Groups.objects.filter(deleted_by__isnull=True).all()
     def get(self, request):
@@ -187,7 +185,6 @@ class GroupsDetail(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class GroupsInfo(APIView):
     def get(self, request, id):
         try:
@@ -202,7 +199,7 @@ class GroupsInfo(APIView):
 
     def put(self, request, id):
         try:
-            obj = Groups.objects.get(Group_Id=id)
+            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             serializer = serializers.GroupsSerializer(obj, data=request.data)
             if serializer.is_valid():
                 group_name = serializer.validated_data['Group_Name']
@@ -227,7 +224,7 @@ class GroupsInfo(APIView):
 
     def patch(self, request, id):
         try:
-            obj = Groups.objects.get(Group_Id=id)
+            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             serializer = serializers.GroupsSerializer(obj, data=request.data, partial=True)
             if serializer.is_valid():
                 group_name = serializer.validated_data['Group_Name']
@@ -254,7 +251,7 @@ class GroupsInfo(APIView):
     @csrf_exempt
     def delete(self, request, id):
         try:
-            obj = Groups.objects.get(Group_Id=id)
+            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             name = obj.Group_Name
             obj.deleted_at = timezone.now()
             obj.deleted_by = 1
@@ -375,7 +372,6 @@ class UsersInfo(APIView):
         except Users.DoesNotExist:
             message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
 
 class NumberListDetail(APIView):
@@ -539,50 +535,72 @@ class DirectoryInfo(APIView):
 
     def put(self, request, id):
         try:
-            obj = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
-            serializer = serializers.DirectorySerializer(obj, data=request.data)
+            directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
+            relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory)
+            relation_numbers.delete()
+            serializer = serializers.DirectorySerializer(directory, data=request.data.get("directory"))
             if serializer.is_valid():
+                # Check if Directory_Name is unique
                 directory_name = serializer.validated_data['Directory_Name']
-                if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
-                    message = {
-                        "type": "error",
-                        "message": "Répertoire " + directory_name + " existe déjà",
-                    }
-                    return JsonResponse(message)
+                if directory_name != request.data.get("directory").get("Directory_Name"):
+                    if Directory.objects.filter(Directory_Name=directory_name, deleted_by__isnull=True).exists():
+                        message = {
+                            "type": "error",
+                            "message": "Répertoire " + directory_name + " existe déjà",
+                        }
+                        return JsonResponse(message)
                 serializer.save()
-                data = serializer.data
+                data_directory = serializer.data
+
+                numbers = request.data.get("numbers")
+                for number in numbers:
+                    ResultSet = {"Directory_Id": id, "Number_Id": number}
+                    serializer2 = serializers.RelationDirectoryNumberSerializer(data=ResultSet)
+                    if serializer2.is_valid():
+                        serializer2.save()
                 message = {
                     "type": "success",
-                    "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
-                    "id": data.get("Directory_Id")
+                    "message": "Répertoire " + data_directory.get("Directory_Name") + " modifié avec succès",
+                    "id": data_directory.get("Directory_Id")
                 }
                 return JsonResponse(message)
         except Directory.DoesNotExist:
-            message = {"message": "Directory non trouver"}
+            message = {"message": "Directory non trouvé"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
         try:
-            obj = Directory.objects.get(Directory_Id=id)
-            serializer = serializers.DirectorySerializer(obj, data=request.data, partial=True)
+            directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
+            relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory)
+            relation_numbers.delete()
+            serializer = serializers.DirectorySerializer(directory, data=request.data.get("directory"), partial=True)
             if serializer.is_valid():
+                # Check if Directory_Name is unique
                 directory_name = serializer.validated_data['Directory_Name']
-                if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
-                    message = {
-                        "type": "error",
-                        "message": "Répertoire " + directory_name + " existe déjà",
-                    }
-                    return JsonResponse(message)
+                if directory_name != request.data.get("directory").get("Directory_Name"):
+                    if Directory.objects.filter(Directory_Name=directory_name, deleted_by__isnull=True).exists():
+                        message = {
+                            "type": "error",
+                            "message": "Répertoire " + directory_name + " existe déjà",
+                        }
+                        return JsonResponse(message)
                 serializer.save()
-                data = serializer.data
+                data_directory = serializer.data
+
+                numbers = request.data.get("numbers")
+                for number in numbers:
+                    ResultSet = {"Directory_Id": id, "Number_Id": number}
+                    serializer2 = serializers.RelationDirectoryNumberSerializer(data=ResultSet)
+                    if serializer2.is_valid():
+                        serializer2.save()
                 message = {
                     "type": "success",
-                    "message": "Répertoire " + data.get("Directory_Name") + " modifié avec succes",
-                    "id": data.get("Directory_Id")
+                    "message": "Répertoire " + data_directory.get("Directory_Name") + " modifié avec succès",
+                    "id": data_directory.get("Directory_Id")
                 }
                 return JsonResponse(message)
         except Directory.DoesNotExist:
-            message = {"message": "Directory not found"}
+            message = {"message": "Directory non trouvé"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
 
