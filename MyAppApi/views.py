@@ -522,11 +522,13 @@ class DirectoryInfo(APIView):
     def get(self, request, id):
         try:
             directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=id)
-            relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory).values_list('Number', flat=True)
-
+            relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory)
+            serialized_numbers = []
+            for number in relation_numbers:
+                serialized_numbers.append(serializers.RelationDirectoryNumberSerializer(number).data.get("Number"))
             data = {
                 "directory_data": serializers.DirectorySerializer(directory).data,
-                "list_numbers": list(relation_numbers)
+                "list_numbers": serialized_numbers
             }
             return JsonResponse(data)
         except Directory.DoesNotExist:
