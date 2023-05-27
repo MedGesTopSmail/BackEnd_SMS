@@ -35,12 +35,12 @@ urlpatterns = [
     path('mailing_list/', views.Mailing_ListDetail.as_view(), name='Mailing_ListDetail'),
     path('mailing_list/<int:id>/', views.Mailing_ListInfo.as_view(), name='Mailing_ListInfo'),
 
-    # Upload Mailing List
-    path('upload-mailing/', views.UploadMailingLists.as_view(), name='Upload-MailingList'),
-
-    # Send Message Gammu
-    path('send_message/', views.MessageSend, name='Send_Message'),
-
     # Generate Number For Row Table
     path('generate/<str:tag>', views.generate, name='Generate'),
+
+
+    # path('send_sms_directories', views.send_sms_directories, name='Send_Sms_Directories'),
+    # path('send_sms_mailing_list', views.send_sms_mailing_list, name='Send_Sms_Mailing_List'),
+
+
 ]

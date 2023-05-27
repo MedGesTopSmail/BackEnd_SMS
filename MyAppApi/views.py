@@ -1,13 +1,17 @@
 import os
 import sys
 # import gammu
+from datetime import datetime, timedelta
+import time
+import csv
+import base64
 import random
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number
+from Project_SMS import settings
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number
 from . import serializers
 from rest_framework import status
 from django.http import JsonResponse
@@ -15,7 +19,8 @@ from .serializers import Mailing_ListSerializer
 
 
 def index(request):
-    return render(request, 'Layouts/index.html')
+    return render(request, 'index.html')
+
 
 def generate(self, tag):
     if tag.upper() == "ENT":
@@ -51,6 +56,7 @@ def generate(self, tag):
         }
         return JsonResponse(data)
 
+
 class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.filter(deleted_by__isnull=True)
@@ -77,6 +83,7 @@ class EntitiesDetail(APIView):
             }
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class EntitiesInfo(APIView):
     def get(self, request, id):
@@ -157,8 +164,10 @@ class EntitiesInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+
 class GroupsDetail(APIView):
     queryset = Groups.objects.filter(deleted_by__isnull=True).all()
+
     def get(self, request):
         obj_groups = self.queryset.all()
         serializer = serializers.GroupsSerializer(obj_groups, many=True)
@@ -185,6 +194,7 @@ class GroupsDetail(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class GroupsInfo(APIView):
     def get(self, request, id):
         try:
@@ -195,7 +205,6 @@ class GroupsInfo(APIView):
         except Groups.DoesNotExist:
             message = {"message": "Group non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
     def put(self, request, id):
         try:
@@ -246,7 +255,6 @@ class GroupsInfo(APIView):
         except Groups.DoesNotExist:
             message = {"message": "Group not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
     @csrf_exempt
     def delete(self, request, id):
@@ -301,11 +309,17 @@ class UsersInfo(APIView):
             obj = Users.objects.filter(deleted_by__isnull=True).get(User_Id=id)
             serializer = serializers.UsersSerializer(obj)
             data = serializer.data
+
+            # Decode User_Password_Crypt and include it in the JSON response
+            user_password_crypt = obj.User_Password_Crypt
+            user_password_crypt_string = eval(user_password_crypt)
+            decoded_password = base64.b85decode(user_password_crypt_string).decode("utf-8")
+            data["decoded_password"] = decoded_password
+
             return JsonResponse(data, safe=False)
         except Users.DoesNotExist:
             message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
     def put(self, request, id):
         try:
@@ -413,7 +427,6 @@ class NumberListInfo(APIView):
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
     def put(self, request, id):
         try:
             obj = Number_List.objects.get(Number_Id=id)
@@ -439,7 +452,6 @@ class NumberListInfo(APIView):
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
     def patch(self, request, id):
         try:
             obj = Number_List.objects.get(Number_Id=id)
@@ -464,7 +476,6 @@ class NumberListInfo(APIView):
         except Number_List.DoesNotExist:
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
     def delete(self, request, id):
         try:
@@ -605,7 +616,6 @@ class DirectoryInfo(APIView):
             message = {"message": "Directory non trouvé"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
     def delete(self, request, id):
         try:
             obj = Directory.objects.get(Directory_Id=id)
@@ -659,6 +669,7 @@ class Mailing_ListDetail(APIView):
             }
             return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
 
+
 class Mailing_ListInfo(APIView):
     def get(self, request, id):
         try:
@@ -706,7 +717,6 @@ class Mailing_ListInfo(APIView):
         except Mailing_List.DoesNotExist:
             message = {"message": "Liste d'envoi non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-
 
     def patch(self, request, id):
         try:
@@ -784,6 +794,7 @@ class MessageDetail(APIView):
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class MessageInfo(APIView):
     def get(self, request, id):
         try:
@@ -795,7 +806,6 @@ class MessageInfo(APIView):
             message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
     def put(self, request, id):
         try:
             obj = Predefined_Message.objects.get(Message_Id=id)
@@ -803,7 +813,8 @@ class MessageInfo(APIView):
             if serializer.is_valid():
                 Message_Name = serializer.validated_data['Message_Name']
                 if obj.Message_Name != request.data['Message_Name']:
-                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(deleted_by__isnull=True).exists():
+                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(
+                            deleted_by__isnull=True).exists():
                         message = {
                             "type": "error",
                             "message": "Nom Message " + Message_Name + " existe deja",
@@ -828,7 +839,8 @@ class MessageInfo(APIView):
             if serializer.is_valid():
                 Message_Name = serializer.validated_data['Message_Name']
                 if obj.Message_Name != request.data['Message_Name']:
-                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(deleted_by__isnull=True).exists():
+                    if Predefined_Message.objects.filter(Message_Name=Message_Name).filter(
+                            deleted_by__isnull=True).exists():
                         message = {
                             "type": "error",
                             "message": "Nom Message " + Message_Name + " existe deja",
@@ -862,182 +874,539 @@ class MessageInfo(APIView):
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-# Send Message with Gammu
-def MessageSend(request):
-    return render(request, 'Send_Message/index.html')
 
 
-# class SendSMS(APIView):
-#     def post(self, request):
-#         # Get the recipient number and message from the POST data
-#         recipient_number = request.POST.get('recipient_number')
-#         recipient_text = request.POST.get('recipient_text')
-#
-#         # Create object for talking with phone
-#         state_machine = gammu.StateMachine()
-#
-#         # Optionally load config file as defined by first parameter
-#         if len(sys.argv) > 2:
-#             # Read the configuration from given file
-#             state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1' + sys.argv[1])
-#             # Remove file name from args list
-#             del sys.argv[1]
-#         else:
-#             # Read the configuration (~/.gammurc)
-#             state_machine.ReadConfig()
-#
-#         # Check parameters
-#         if not recipient_number:
-#             return JsonResponse("Please provide a recipient number.")
-#
-#         # Connect to the phone
-#         state_machine.Init()
-#
-#         # Prepare message data
-#         # We tell that we want to use first SMSC number stored in phone
-#         message = {
-#             "Text": recipient_text,
-#             "SMSC": {"Location": 1},
-#             "Number": recipient_number,
-#         }
-#
-#         # Actually send the message
-#         state_machine.SendSMS(message)
-#
-#         return JsonResponse("SMS sent to {}".format(recipient_number))
 
-# class SendSMS(APIView):
-#     def post(self, request):
-#         # Get the recipient number and message from the POST data
-#         recipient_number = request.POST.get('recipient_number')
-#         recipient_text = request.POST.get('recipient_text')
+
+# Sending Normal Message with Gammu
+# def send_sms_normal(request):
+#     liste = {
+#         'Numbers': ['+212624936749','+212653344884'],
+#         'Language': 'Latin',
+#         'Message': 'Sms Prgramme M3a 00:56 khadam ;)',
+#         'User': 'Mohammed Ennouaim',
+#         'Date': ''
+#     }
+#     # Create object for talking with phone
+#     state_machine = gammu.StateMachine()
+#     # Optionally load config file as defined by the first parameter
+#     if len(sys.argv) > 2:
+#         # Read the configuration from the given file
+#         state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1')
+#     else:
+#         # Read the configuration (~/.gammurc)
+#         state_machine.ReadConfig()
+#     # Connect to the phone
+#     state_machine.Init()
 #
-#         # Create object for talking with phone
-#         state_machine = gammu.StateMachine()
-#
-#         # Optionally load config file as defined by first parameter
-#         if len(sys.argv) > 2:
-#             # Read the configuration from given file
-#             state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1' + sys.argv[1])
-#             # Remove file name from args list
-#             del sys.argv[1]
-#         else:
-#             # Read the configuration (~/.gammurc)
-#             state_machine.ReadConfig()
-#
-#         # Check parameters
-#         if not recipient_number:
-#             return JsonResponse("Please provide a recipient number.")
-#
-#         # Connect to the phone
-#         state_machine.Init()
-#
-#         # Prepare message data
-#         if len(recipient_text) <= 160:
+#     if not liste['Date']:
+#         success_count = 0
+#         total_count = len(liste['Numbers'])
+#         for number in liste['Numbers']:
 #             # Send a normal message if the message length is less than or equal to 160 characters
-#             message = {
-#                 "Text": recipient_text,
-#                 "SMSC": {"Location": 1},
-#                 "Number": recipient_number,
-#             }
-#             # Actually send the message
-#             state_machine.SendSMS(message)
-#         else:
-#             # Split the message into parts of 153 characters (GSM 7-bit encoding) or 134 characters (UCS2 encoding)
-#             parts = gammu.EncodeSMS(recipient_text, 1)
-#
-#             # Calculate the number of messages
-#             num_parts = len(parts)
-#
-#             # Initialize the current modem index to 0
-#             current_modem_index = 0
-#
-#             # Loop over the message parts and send them using the available modems
-#             for i, part in enumerate(parts):
-#                 # Prepare message data
+#             if len(liste['Message']) <= 160:
 #                 message = {
-#                     "UDH": part[0],
-#                     "Text": part[1],
+#                     "Text": liste['Message'],
 #                     "SMSC": {"Location": 1},
-#                     "Number": recipient_number,
+#                     "Number": number,
+#                 }
+#                 # Actually send the message
+#                 result = state_machine.SendSMS(message)
+#                 if result:
+#                     success_count += 1
+#             else:
+#                 # Create SMS info structure
+#                 smsinfo = {
+#                     "Class": -1,
+#                     "Unicode": False,
+#                     "Entries": [
+#                         {
+#                             "ID": "ConcatenatedTextLong",
+#                             "Buffer": liste['Message']
+#                         }
+#                     ],
+#                 }
+#                 # Encode messages
+#                 encoded = gammu.EncodeSMS(smsinfo)
+#                 # Send messages
+#                 for message in encoded:
+#                     # Fill in numbers
+#                     message["SMSC"] = {"Location": 1}
+#                     message["Number"] = number
+#                     # Actually send the message
+#                     result = state_machine.SendSMS(message)
+#                     if result:
+#                         success_count += 1
+#         if success_count == total_count:
+#             message = {
+#                 "message": "SMS envoye a tous les numeros"
+#             }
+#         else:
+#             message = {
+#                 "message": "Echec de l'envoi de certains SMS"
+#             }
+#         return JsonResponse(message)
+#     else:
+#         # Code to send message at the defined date
+#         scheduled_time = datetime.strptime(liste['Date'], '%Y-%m-%dT%H:%M')
+#         current_time = datetime.now()
+#         time_diff = scheduled_time - current_time
+#         if time_diff.total_seconds() > 0:
+#             # Sleep until the scheduled time
+#             time.sleep(time_diff.total_seconds())
+#             success_count = 0
+#             total_count = len(liste['Numbers'])
+#
+#             for number in liste['Numbers']:
+#                 # Prepare message data
+#                 if len(liste['Message']) <= 160:
+#                     # Send a normal message if the message length is less than or equal to 160 characters
+#                     message = {
+#                         "Text": liste['Message'],
+#                         "SMSC": {"Location": 1},
+#                         "Number": number,
+#                     }
+#                     # Actually send the message
+#                     result = state_machine.SendSMS(message)
+#                     if result:
+#                         success_count += 1
+#                 else:
+#                     # Create SMS info structure
+#                     smsinfo = {
+#                         "Class": -1,
+#                         "Unicode": False,
+#                         "Entries": [
+#                             {
+#                                 "ID": "ConcatenatedTextLong",
+#                                 "Buffer": liste['Message']
+#                             }
+#                         ],
+#                     }
+#                     # Encode messages
+#                     encoded = gammu.EncodeSMS(smsinfo)
+#                     # Send messages
+#                     for message in encoded:
+#                         # Fill in numbers
+#                         message["SMSC"] = {"Location": 1}
+#                         message["Number"] = number
+#                         # Actually send the message
+#                         result = state_machine.SendSMS(message)
+#                         if result:
+#                             success_count += 1
+#
+#             if success_count == total_count:
+#                 message = {
+#                     "message": "SMS envoye a tous les numeros"
+#                 }
+#             else:
+#                 message = {
+#                     "message": "Echec de l'envoi de certains SMS"
 #                 }
 #
-#                 # Get the list of available modems
-#                 modems = state_machine.GetConnectedGSMPhones()
-#
-#                 # Get the current modem
-#                 current_modem = modems[current_modem_index]
-#
-#                 # Actually send the message using the current modem
-#                 state_machine.SendSMS(message, current_modem)
-#
-#                 # Increment the current modem index and reset it to 0 if it exceeds the number of available modems
-#                 current_modem_index = (current_modem_index + 1) % len(modems)
-#
-#         return JsonResponse("SMS sent to {}".format(recipient_number))
+#             return JsonResponse(message)
 
 
-# def modem_status(request):
-#     sm = gammu.StateMachine()
-#     sm.ReadConfig()  # read the configuration file for Gammu
-#     sm.Init()  # initialize the state machine
-#
-#     state = sm.GetSMSStatus()  # get the SMS status of the phone
-#
-#     return JsonResponse(state)
-
-
-# def log_message(request):
-#     sm = gammu.StateMachine()
-#     sm.ReadConfig()  # read the configuration file for Gammu
-#     sm.Init()  # initialize the state machine
-#
-#     sent_items = sm.GetSMS(sentfolder=1, folder=0)  # get the sent items from the phone
-#
-#     items_data = []
-#     for item in sent_items:
-#         items_data.append(item)
-#
-#     return JsonResponse({'sent_items': items_data})
-
-
-
-# Mailing list View
-
-
-class UploadMailingLists(APIView):
-     def post(self, request):
-         serializer = Mailing_ListSerializer(data=request.data)
-         if serializer.is_valid():
-             mailing_list = serializer.save()
-             mailing_list.Mailing_List_File = request.FILES['Mailing_List_Url'].name
-             mailing_list.save()
-
-             # Return a JSON response with the file URL and a success message
-             message = {
-                 "type": "success",
-                 "message": "Liste ajouter avec succes"
-             }
-             return JsonResponse(message, status=status.HTTP_201_CREATED)
-         else:
-             # Return a JSON response with an error message
-             message = {
-                 'message': 'error',
-                 'errors': serializer.errors
-             }
-             return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
-
-# class Authenticate(auth):
-#     def login(self, request, username=None, password=None, **kwargs):
-#         Users = get_user_model()
-#         try:
-#             user = Users.objects.get(User_Email=username)
-#         except Users.DoesNotExist:
-#             return None
+# Sending Sms To Directories with Gammu
+# def send_sms_directories(request):
+#     liste = {
+#         'Directory': '1',
+#         'Language': 'Latin',
+#         'Message': 'Bonjour',
+#         'User': 'Mohammed Ennouaim',
+#         'Date': ''
+#     }
+#     # Create object for talking with phone
+#     state_machine = gammu.StateMachine()
+#     # Optionally load config file as defined by the first parameter
+#     if len(sys.argv) > 2:
+#         # Read the configuration from the given file
+#         state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1')
+#     else:
+#         # Read the configuration (~/.gammurc)
+#         state_machine.ReadConfig()
+#     # Connect to the phone
+#     state_machine.Init()
+# 	# Get all number liste from directory
+#     directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=liste['Directory'])
+#     relation_numbers = Relation_Directory_Number.objects.filter(deleted_by__isnull=True, Directory=directory)
+#     serialized_numbers = []
+#     for number in relation_numbers:
+#         serialized_numbers.append(serializers.RelationDirectoryNumberSerializer(number).data["Number"])
+#     numbers_list = [number["Number"] for number in serialized_numbers]
+#     if not liste['Date']:
+#         success_count = 0
+#         total_count = len(numbers_list)
+#         for number in numbers_list:
+#             # Send a normal message if the message length is less than or equal to 160 characters
+#             if len(liste['Message']) <= 160:
+#                 message = {
+#                     "Text": liste['Message'],
+#                     "SMSC": {"Location": 1},
+#                     "Number": number,
+#                 }
+#                 # Actually send the message
+#                 result = state_machine.SendSMS(message)
+#                 if result:
+#                     success_count += 1
+#             else:
+#                 # Create SMS info structure
+#                 smsinfo = {
+#                     "Class": -1,
+#                     "Unicode": False,
+#                     "Entries": [
+#                         {
+#                             "ID": "ConcatenatedTextLong",
+#                             "Buffer": liste['Message']
+#                         }
+#                     ],
+#                 }
+#                 # Encode messages
+#                 encoded = gammu.EncodeSMS(smsinfo)
+#                 # Send messages
+#                 for message in encoded:
+#                     # Fill in numbers
+#                     message["SMSC"] = {"Location": 1}
+#                     message["Number"] = number
+#                     # Actually send the message
+#                     result = state_machine.SendSMS(message)
+#                     if result:
+#                         success_count += 1
+#         if success_count == total_count:
+#             message = {
+#                 "message": "SMS envoye a tous les numeros"
+#             }
 #         else:
-#             if user.check_password(password):
-#                 return user
-#         return None
+#             message = {
+#                 "message": "Echec de l'envoi de certains SMS"
+#             }
+#         return JsonResponse(message)
+#     else:
+#         # Code to send message at the defined date
+#         scheduled_time = datetime.strptime(liste['Date'], '%Y-%m-%dT%H:%M')
+#         current_time = datetime.now()
+#         time_diff = scheduled_time - current_time
+#         if time_diff.total_seconds() > 0:
+#             # Sleep until the scheduled time
+#             time.sleep(time_diff.total_seconds())
+#             success_count = 0
+#             total_count = len(numbers_list)
 #
-#     def logout(self, request):
-#         logout(request)
+#             for number in numbers_list:
+#                 # Prepare message data
+#                 if len(liste['Message']) <= 160:
+#                     # Send a normal message if the message length is less than or equal to 160 characters
+#                     message = {
+#                         "Text": liste['Message'],
+#                         "SMSC": {"Location": 1},
+#                         "Number": number,
+#                     }
+#                     # Actually send the message
+#                     result = state_machine.SendSMS(message)
+#                     if result:
+#                         success_count += 1
+#                 else:
+#                     # Create SMS info structure
+#                     smsinfo = {
+#                         "Class": -1,
+#                         "Unicode": False,
+#                         "Entries": [
+#                             {
+#                                 "ID": "ConcatenatedTextLong",
+#                                 "Buffer": liste['Message']
+#                             }
+#                         ],
+#                     }
+#                     # Encode messages
+#                     encoded = gammu.EncodeSMS(smsinfo)
+#                     # Send messages
+#                     for message in encoded:
+#                         # Fill in numbers
+#                         message["SMSC"] = {"Location": 1}
+#                         message["Number"] = number
+#                         # Actually send the message
+#                         result = state_machine.SendSMS(message)
+#                         if result:
+#                             success_count += 1
+#
+#             if success_count == total_count:
+#                 message = {
+#                     "message": "SMS envoye a tous les numeros"
+#                 }
+#             else:
+#                 message = {
+#                     "message": "Echec de l'envoi de certains SMS"
+#                 }
+#
+#             return JsonResponse(message)
+
+# Sending Sms To Mailing List with Gammu
+# def send_sms_mailing_list(request):
+#     liste = {
+#         'Mailing_List': '1',
+#         'Language': 'Latin',
+#         'Message': 'Bonjour',
+#         'User': 'Mohammed Ennouaim',
+#         'Date': ''
+#     }
+#
+#     # Create object for talking with phone
+#     state_machine = gammu.StateMachine()
+#     # Optionally load config file as defined by the first parameter
+#     if len(sys.argv) > 2:
+#         # Read the configuration from the given file
+#         state_machine.ReadConfig(Filename='/etc/gammu-smsdrc-1')
+#     else:
+#         # Read the configuration (~/.gammurc)
+#         state_machine.ReadConfig()
+#     # Connect to the phone
+#     state_machine.Init()
+#     # Get Mailing list object
+#     mailing_list = Mailing_List.objects.filter(deleted_by__isnull=True).get(Mailing_List_Id=liste['Mailing_List'])
+#     # Access the path of the mailing list file
+#     mailing_list_path = mailing_list.Mailing_List_Url.name
+#     mailing_list_data = []
+#     try:
+#         with open(mailing_list_path, 'r', encoding='utf-8-sig') as file:
+#             csv_reader = csv.reader(file)
+#             first_row = next(csv_reader)
+#
+#             # file csv have only list of number
+#             if len(first_row) == 1 and liste['Message']:
+#                 for i, row in enumerate(csv_reader):
+#                     if i == 0:
+#                         # Remove the UTF-8 BOM from the first element of the first row
+#                         phone_number = row[0].strip('""\ufeff')
+#                     else:
+#                         phone_number = row[0].strip('""')
+#                     mailing_list_data.append(phone_number)
+#
+#                 Numbers = mailing_list_data
+#                 if not liste['Date']:
+#                     success_count = 0
+#                     total_count = len(Numbers)
+#                     for number in Numbers:
+#                         # Send a normal message if the message length is less than or equal to 160 characters
+#                         if len(liste['Message']) <= 160:
+#                             message = {
+#                                 "Text": liste['Message'],
+#                                 "SMSC": {"Location": 1},
+#                                 "Number": number,
+#                             }
+#                             # Actually send the message
+#                             result = state_machine.SendSMS(message)
+#                             if result:
+#                                 success_count += 1
+#                         else:
+#                             # Create SMS info structure
+#                             smsinfo = {
+#                                 "Class": -1,
+#                                 "Unicode": False,
+#                                 "Entries": [
+#                                     {
+#                                         "ID": "ConcatenatedTextLong",
+#                                         "Buffer": liste['Message']
+#                                     }
+#                                 ],
+#                             }
+#                             # Encode messages
+#                             encoded = gammu.EncodeSMS(smsinfo)
+#                             # Send messages
+#                             for message in encoded:
+#                                 # Fill in numbers
+#                                 message["SMSC"] = {"Location": 1}
+#                                 message["Number"] = number
+#                                 # Actually send the message
+#                                 result = state_machine.SendSMS(message)
+#                                 if result:
+#                                     success_count += 1
+#                     if success_count == total_count:
+#                         message = {
+#                             "message": "SMS envoye a tous les numeros"
+#                         }
+#                     else:
+#                         message = {
+#                             "message": "Echec de l'envoi de certains SMS"
+#                         }
+#                     return JsonResponse(message)
+#
+#                 else:
+#                     # Code to send message at the defined date
+#                     scheduled_time = datetime.strptime(liste['Date'], '%Y-%m-%dT%H:%M')
+#                     current_time = datetime.now()
+#                     time_diff = scheduled_time - current_time
+#                     if time_diff.total_seconds() > 0:
+#                         # Sleep until the scheduled time
+#                         time.sleep(time_diff.total_seconds())
+#                         success_count = 0
+#                         total_count = len(Numbers)
+#
+#                         for number in Numbers:
+#                             # Prepare message data
+#                             if len(liste['Message']) <= 160:
+#                                 # Send a normal message if the message length is less than or equal to 160 characters
+#                                 message = {
+#                                     "Text": liste['Message'],
+#                                     "SMSC": {"Location": 1},
+#                                     "Number": number,
+#                                 }
+#                                 # Actually send the message
+#                                 result = state_machine.SendSMS(message)
+#                                 if result:
+#                                     success_count += 1
+#                             else:
+#                                 # Create SMS info structure
+#                                 smsinfo = {
+#                                     "Class": -1,
+#                                     "Unicode": False,
+#                                     "Entries": [
+#                                         {
+#                                             "ID": "ConcatenatedTextLong",
+#                                             "Buffer": liste['Message']
+#                                         }
+#                                     ],
+#                                 }
+#                                 # Encode messages
+#                                 encoded = gammu.EncodeSMS(smsinfo)
+#                                 # Send messages
+#                                 for message in encoded:
+#                                     # Fill in numbers
+#                                     message["SMSC"] = {"Location": 1}
+#                                     message["Number"] = number
+#                                     # Actually send the message
+#                                     result = state_machine.SendSMS(message)
+#                                     if result:
+#                                         success_count += 1
+#
+#                         if success_count == total_count:
+#                             message = {
+#                                 "message": "SMS envoye a tous les numeros"
+#                             }
+#                         else:
+#                             message = {
+#                                 "message": "Echec de l'envoi de certains SMS"
+#                             }
+#
+#                         return JsonResponse(message)
+#
+#             elif len(first_row) == 2 and not liste['Message']:
+#                 for row in csv_reader:
+#                     phone_number = row[0].strip('""')
+#                     message = row[1].strip('""')
+#                     mailing_list_data.append({'Phone_Number': phone_number, 'Message': message})
+#
+#                 file_data = mailing_list_data
+#                 if not liste['Date']:
+#                     success_count = 0
+#                     total_count = len(file_data)
+#                     for item in file_data:
+#                         phone_number = item['Phone_Number']
+#                         message_l = item['Message']
+#                         if len(message_l) <= 160:
+#                             message_data = {
+#                                 "Text": message_l,
+#                                 "SMSC": {"Location": 1},
+#                                 "Number": phone_number,
+#                             }
+#                             # Actually send the message
+#                             result = state_machine.SendSMS(message_data)
+#                             if result:
+#                                 success_count += 1
+#                         else:
+#                             # Create SMS info structure
+#                             smsinfo = {
+#                                 "Class": -1,
+#                                 "Unicode": False,
+#                                 "Entries": [
+#                                     {
+#                                         "ID": "ConcatenatedTextLong",
+#                                         "Buffer": message_l
+#                                     }
+#                                 ],
+#                             }
+#                             # Encode messages
+#                             encoded = gammu.EncodeSMS(smsinfo)
+#                             # Send messages
+#                             for message in encoded:
+#                                 # Fill in numbers
+#                                 message["SMSC"] = {"Location": 1}
+#                                 message["Number"] = phone_number
+#                                 # Actually send the message
+#                                 result = state_machine.SendSMS(message)
+#                                 if result:
+#                                     success_count += 1
+#                     if success_count == total_count:
+#                         message = {
+#                             "message": "SMS envoye a tous les numeros"
+#                         }
+#                     else:
+#                         message = {
+#                             "message": "Echec de l'envoi de certains SMS"
+#                         }
+#                     return JsonResponse(message)
+#
+#                 else:
+#                     # Code to send message at the defined date
+#                     scheduled_time = datetime.strptime(liste['Date'], '%Y-%m-%dT%H:%M')
+#                     current_time = datetime.now()
+#                     time_diff = scheduled_time - current_time
+#                     if time_diff.total_seconds() > 0:
+#                         # Sleep until the scheduled time
+#                         time.sleep(time_diff.total_seconds())
+#                         success_count = 0
+#                         total_count = len(file_data)
+#
+#                         for item in file_data:
+#                             phone_number = item['Phone_Number']
+#                             message_l = item['Message']
+#                             # Prepare message data
+#                             if len(message) <= 160:
+#                                 # Send a normal message if the message length is less than or equal to 160 characters
+#                                 message = {
+#                                     "Text": message_l,
+#                                     "SMSC": {"Location": 1},
+#                                     "Number": phone_number,
+#                                 }
+#                                 # Actually send the message
+#                                 result = state_machine.SendSMS(message)
+#                                 if result:
+#                                     success_count += 1
+#                             else:
+#                                 # Create SMS info structure
+#                                 smsinfo = {
+#                                     "Class": -1,
+#                                     "Unicode": False,
+#                                     "Entries": [
+#                                         {
+#                                             "ID": "ConcatenatedTextLong",
+#                                             "Buffer": message_l
+#                                         }
+#                                     ],
+#                                 }
+#                                 # Encode messages
+#                                 encoded = gammu.EncodeSMS(smsinfo)
+#                                 # Send messages
+#                                 for message in encoded:
+#                                     # Fill in numbers
+#                                     message["SMSC"] = {"Location": 1}
+#                                     message["Number"] = phone_number
+#                                     # Actually send the message
+#                                     result = state_machine.SendSMS(message)
+#                                     if result:
+#                                         success_count += 1
+#
+#                         if success_count == total_count:
+#                             message = {
+#                                 "message": "SMS envoye a tous les numeros"
+#                             }
+#                         else:
+#                             message = {
+#                                 "message": "Echec de l'envoi de certains SMS"
+#                             }
+#
+#                         return JsonResponse(message)
+#
+#     except FileNotFoundError:
+#         return JsonResponse({'error': 'Mailing list file not found'})
+#
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)})

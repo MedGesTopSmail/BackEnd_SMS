@@ -40,8 +40,8 @@ class Groups(models.Model):
 class Users(models.Model):
     ROLE_CHOICES = (
         ('Member', 'Member'),
-        ('Administrateur', 'Administrateur')
-        # ('Super Administrateur', 'Super Administrateur')
+        ('Administrateur', 'Administrateur'),
+        ('Super Administrateur', 'Super Administrateur')
     )
     # PERMISSION_CHOICES = (
     #     ('Add', 'Add'),
@@ -57,7 +57,7 @@ class Users(models.Model):
     # User_Permissions = models.CharField(max_length=500, choices=PERMISSION_CHOICES)
     User_Email = models.CharField(max_length=500)
     User_Password = models.CharField(max_length=500)
-    # User_Password_Crypt = models.CharField(max_length=500)
+    User_Password_Crypt = models.CharField(max_length=500)
     Group = models.ForeignKey(Groups, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,7 +71,7 @@ class Users(models.Model):
         # Hash the password in make_password and save it to User_Password field
         self.User_Password = make_password(self.User_Password)
         # Encode the hashed password in base64 and save it to User_Password_Crypt field
-        # self.User_Password_Crypt = make_password(self.User_Password)
+        self.User_Password_Crypt = base64.b85encode(self.User_Password_Crypt.encode("utf-8"), pad=False)
         super(Users, self).save(*args, **kwargs)
 
 
@@ -120,7 +120,7 @@ class Mailing_List(models.Model):
     Mailing_List_Id = models.AutoField(primary_key=True)
     Mailing_List_Name = models.CharField(max_length=500)
     Mailing_List_File = models.CharField(max_length=500)
-    Mailing_List_Url = models.FileField(upload_to='MyAppApi/Static/Media/Files/Mailing_List/')
+    Mailing_List_Url = models.FileField(upload_to='media/mailing_list/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_by = models.IntegerField(null=True, default=None)
