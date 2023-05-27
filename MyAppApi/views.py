@@ -314,7 +314,7 @@ class UsersInfo(APIView):
             user_password_crypt = obj.User_Password_Crypt
             user_password_crypt_string = eval(user_password_crypt)
             decoded_password = base64.b85decode(user_password_crypt_string).decode("utf-8")
-            data["decoded_password"] = decoded_password
+            data["Decoded_Password"] = decoded_password
 
             return JsonResponse(data, safe=False)
         except Users.DoesNotExist:
