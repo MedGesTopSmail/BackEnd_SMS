@@ -7,6 +7,7 @@ import base64
 import random
 from . import serializers
 from django.contrib import auth
+from django.db import connection
 from Project_SMS import settings
 from rest_framework import status
 from django.utils import timezone
@@ -1445,3 +1446,19 @@ def logout(request):
 #
 #     except Exception as e:
 #         return JsonResponse({'error': str(e)})
+#
+#
+# # Get Modem  (Phone Info)
+# def get_phone_info(request):
+#     # Execute the SQL query
+#     with connection.cursor() as cursor:
+#         query = """ SELECT * FROM smsdb.phones """
+#         cursor.execute(query)
+#         phone_info = cursor.fetchall()
+#
+#     # Format the result as a list of dictionaries
+#     columns = [col[0] for col in cursor.description]
+#     phone_info = [dict(zip(columns, row)) for row in phone_info]
+#
+#     # Return the phone information as JSON
+#     return JsonResponse(phone_info, safe=False)
