@@ -38,6 +38,9 @@ urlpatterns = [
     # Generate Number For Row Table
     path('generate/<str:tag>', views.generate, name='Generate'),
 
+    # Authentication
+    path('login', views.login, name='login'),
+    path('logout', views.logout, name='logout'),
 
     # path('send_sms_directories', views.send_sms_directories, name='Send_Sms_Directories'),
     # path('send_sms_mailing_list', views.send_sms_mailing_list, name='Send_Sms_Mailing_List'),
