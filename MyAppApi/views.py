@@ -20,6 +20,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
 from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
     Relation_Directory_Number
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
 
 
 def index(request):
@@ -875,35 +877,83 @@ class MessageInfo(APIView):
         except Predefined_Message.DoesNotExist:
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
-@csrf_exempt
-def login(request):
-    email = "ennouaim159@gmail.com"
-    password = "Med@Admin"
+# @csrf_exempt
+class login(APIView):
+    def post(self, request):
+        email = request.data['Email']
+        password = request.data['Password']
 
-    # Authenticate the user based on email and hashed password
-    user = Users.objects.filter(User_Email=email).filter(deleted_by__isnull=True)
-    if user is not None and check_password(password, user.User_Password):
-        auth.login(request, user)
-        # Save Object User in Session
-        request.session['user'] = {
-            # Add more fields as needed
-            'id': user.User_Id,
-            'email': user.User_Email,
-            'first_name': user.User_First_Name,
-            'last_name': user.User_Last_Name,
-            'role': user.User_Role
-        }
-        message = {
-            "type": "success",
-            "message": "Login successful"
-        }
-        return JsonResponse(message)
-    else:
-        message = {
-            "type": "error",
-            "message": "Email or mot de passe Incorrect"
-        }
-        return JsonResponse(message, status=401)
+        obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
+        # if user is not None
+        if(obj.exists()):
+            serializer = serializers.UsersSerializer(obj, many=True)
+            user = serializer.data[0]
+            # check_password
+            if check_password(password, user.get("User_Password")):
+                # Create a new User instance using the dictionary data
+                username = User.objects.make_random_password(length=10)
+                new_user = User(
+                    username=username,
+                    password=user.get('User_Password'),
+                    email=user.get('User_Email'),
+                    first_name=user.get('User_First_Name'),
+                    last_name=user.get('User_Last_Name')
+                )
+                new_user.save()
+                token = Token.objects.create(user=new_user)
+                message = {
+                    "type": "success",
+                    "message": "Login successful",
+                    "token": token.key,
+                    "user": user
+                }
+                return JsonResponse(message)
+            else:
+                message = {
+                    "type": "warning",
+                    "message": "Mot de passe Incorrect",
+                }
+                return JsonResponse(message)
+        else:
+            message = {
+                "type": "warning",
+                "message": "Email Incorrect",
+            }
+            return JsonResponse(message)
+
+
+
+        # # Authenticate the user based on email and hashed password
+        # user = Users.objects.filter(User_Email=email).filter(deleted_by__isnull=True)
+        # data = {
+        #     "email": email,
+        #     "password": password
+        # }
+        # return JsonResponse(user)
+        # if user is not None and check_password(password, user.User_Password):
+        #     auth.login(request, user)
+        #     # Save Object User in Session
+        #     request.session['user'] = {
+        #         # Add more fields as needed
+        #         'id': user.User_Id,
+        #         'email': user.User_Email,
+        #         'first_name': user.User_First_Name,
+        #         'last_name': user.User_Last_Name,
+        #         'role': user.User_Role
+        #     }
+        #     token = Token.objects.create(user=user)
+        #     message = {
+        #         "type": "success",
+        #         "message": "Login successful",
+        #         "token": token.key
+        #     }
+        #     return JsonResponse(message)
+        # else:
+        #     message = {
+        #         "type": "error",
+        #         "message": "Email or mot de passe Incorrect",
+        #     }
+        #     return JsonResponse(message, status=401)
 
 def logout(request):
     # Logout the user

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'MyAppApi.apps.MyappapiConfig'
 ]
@@ -43,6 +44,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Project_SMS.urls'
+
 
 TEMPLATES = [
     {
@@ -80,17 +82,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_platform',
         'USER': 'root',
-        'PASSWORD': 'ov16@',
+        'PASSWORD': 'kuo8',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
     },
     'second_db': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sms_db',
         'USER': 'root',
-        'PASSWORD': 'ov16@',
+        'PASSWORD': 'kuo8',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
     }
 }
 
@@ -146,3 +148,11 @@ CORS_ORIGIN_ALLOW_ALL = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+}
+
+
