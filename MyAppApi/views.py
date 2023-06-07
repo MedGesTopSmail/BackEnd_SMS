@@ -1041,89 +1041,26 @@ def logout(request):
     return JsonResponse(message)
 
 
-# # Sending Normal Message with Gammu
-# class Send_Normal_Sms(APIView):
-#     def post(self, request):
-#         Numbers_Liste = request.data['Numbers']
-#         Message = request.data['Message']
-#         Users = request.data['Users']
-#         Date = request.data['Date']
-#
-#         # Create a temporary file for the configuration
-#         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#         temp_config_file.write(CONFIG_CONTENT_2.encode())
-#         temp_config_file.close()
-#
-#         # Create object for talking with phone
-#         state_machine = gammu.StateMachine()
-#         # Read the configuration from the given file
-#         state_machine.ReadConfig(Filename=temp_config_file.name)
-#         # Connect to the phone
-#         state_machine.Init()
-#
-#         if not Date:
-#             success_count = 0
-#             total_count = len(Numbers_Liste)
-#             for number in Numbers_Liste:
-#                 # Send a normal message if the message length is less than or equal to 160 characters
-#                 if len(Message) <= 160:
-#                     message = {
-#                         "Text": Message,
-#                         "SMSC": {"Location": 1},
-#                         "Number": number
-#                     }
-#                     # Actually send the message
-#                     result = state_machine.SendSMS(message)
-#                     if result:
-#                         success_count += 1
-#                 else:
-#                     # Create SMS info structure
-#                     smsinfo = {
-#                         "Class": -1,
-#                         "Unicode": False,
-#                         "Entries": [
-#                             {
-#                                 "ID": "ConcatenatedTextLong",
-#                                 "Buffer": Message
-#                             }
-#                         ],
-#                     }
-#                     # Fill in numbers
-#                     smsinfo["SMSC"] = {"Location": 1}
-#                     smsinfo["Number"] = number
-#                     # Actually send the concatenated message
-#                     result = state_machine.SendSMS(smsinfo)
-#                     if result:
-#                         success_count += 1
-#             if success_count == total_count:
-#                 message = {
-#                     "type": "success",
-#                     "message": "SMS envoyé à tous les numéros"
-#                 }
-#             else:
-#                 message = {
-#                     "type": "error",
-#                     "message": "Échec de l'envoi de certains SMS"
-#                 }
-#
-#             state_machine.Terminate()
-#
-#             # Delete the temporary configuration file
-#             os.remove(temp_config_file.name)
-#             return JsonResponse(message)
-#         else:
-#             # Code to send message at the defined date
-#             message = {
-#                 "type": "success",
-#                 "message": "Sms Programmé"
-#             }
-#             return JsonResponse(message)
+# Sending Normal Message with Gammu
+class Send_Normal_Sms(APIView):
+    def post(self, request):
+        Numbers_Liste = request.data['Numbers']
+        Message = request.data['Message']
+        User = request.data['User']
+        Date = request.data['Date']
+
+        # Create a temporary file for the configuration
+        message = {
+            "type": "success",
+            "message": "SMS envoye Par " + Users + " tous les numeros"
+        }
+        return JsonResponse(message)
 # # Sending Sms To Directories with Gammu
 # class Send_Directories_Sms(APIView):
 #     def post(self, request):
 #         Directory = request.data['Directory']
 #         Message = request.data['Message']
-#         Users = request.data['Users']
+#         User = request.data['User']
 #         Date = request.data['Date']
 #
 #         # Create a temporary file for the configuration
@@ -1207,7 +1144,7 @@ def logout(request):
 #
 #         Mailing_List = request.data['Mailing_List']
 #         Message = request.data['Message']
-#         Users = request.data['Users']
+#         User = request.data['User']
 #         Date = request.data['Date']
 #
 #         # Create a temporary file for the configuration
