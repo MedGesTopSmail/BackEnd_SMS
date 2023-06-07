@@ -1046,14 +1046,26 @@ class Send_Normal_Sms(APIView):
     def post(self, request):
         Numbers_Liste = request.data['Numbers']
         Message = request.data['Message']
-        User = request.data['User']
+        # User = request.data['User']
         Date = request.data['Date']
 
         # Create a temporary file for the configuration
         message = {
             "type": "success",
-            "message": f"SMS envoye par {Message} a tous les numeros"
+            "message": f"SMS envoye par {Numbers_Liste} a tous les numeros"
         }
+        return JsonResponse(message)
+
+class Send_Directories_Sms(APIView):
+    def post(self, request):
+        directory_id  = request.data['Directory']
+        Message = request.data['Message']
+        # User = request.data['User']
+        Date = request.data['Date']
+        message = {
+                    "type": "success",
+                    "message": f"SMS envoyé par {directory_id} à tous les numéros"
+                }
         return JsonResponse(message)
 # # Sending Sms To Directories with Gammu
 # class Send_Directories_Sms(APIView):

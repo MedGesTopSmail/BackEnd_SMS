@@ -43,7 +43,7 @@ urlpatterns = [
 
     # Send Sms With Gammu
     path('send_normal_sms/', views.Send_Normal_Sms.as_view(), name='Send_Sms_Normal'),
-    # path('send_directories_sms/', views.Send_Directories_Sms.as_view(), name='Send_Sms_Directories'),
+    path('send_directories_sms/', views.Send_Directories_Sms.as_view(), name='Send_Sms_Directories'),
     # path('send_mailing_list_sms/', views.Send_Mailing_List_Sms.as_view(), name='Send_Sms_Mailing_List'),
 
     # path('send', views.send, name='Send'),
