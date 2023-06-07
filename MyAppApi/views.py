@@ -1052,7 +1052,7 @@ class Send_Normal_Sms(APIView):
         # Create a temporary file for the configuration
         message = {
             "type": "success",
-            "message": "SMS envoye Par " + Users + " tous les numeros"
+            "message": f"SMS envoye par {Message} a tous les numeros"
         }
         return JsonResponse(message)
 # # Sending Sms To Directories with Gammu
