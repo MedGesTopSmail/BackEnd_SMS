@@ -1309,17 +1309,17 @@ class Send_Normal_Sms(APIView):
 #
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)})
-# # Get Modem  (Phone Info)
-# def status(request):
-#     # Execute the SQL query
-#     with connection.cursor() as cursor:
-#         query = """ SELECT * FROM smsdb.phones """
-#         cursor.execute(query)
-#         phone_info = cursor.fetchall()
-#
-#     # Format the result as a list of dictionaries
-#     columns = [col[0] for col in cursor.description]
-#     phone_info = [dict(zip(columns, row)) for row in phone_info]
-#
-#     # Return the phone information as JSON
-#     return JsonResponse(phone_info, safe=False)
+# Get Modem  (Phone Info)
+def status(request):
+    # Execute the SQL query
+    with connection.cursor() as cursor:
+        query = """ SELECT * FROM smsdb.phones """
+        cursor.execute(query)
+        phone_info = cursor.fetchall()
+
+    # Format the result as a list of dictionaries
+    columns = [col[0] for col in cursor.description]
+    phone_info = [dict(zip(columns, row)) for row in phone_info]
+
+    # Return the phone information as JSON
+    return JsonResponse(phone_info, safe=False)
