@@ -3,7 +3,6 @@ from django.urls import path, include
 from . import views
 from Project_SMS import settings
 
-
 urlpatterns = [
     path('', views.index, name='index'),
 
@@ -39,12 +38,19 @@ urlpatterns = [
     path('generate/<str:tag>', views.generate, name='Generate'),
 
     # Authentication
-    # path('login/', views.login.as_view(), name='login'),
     path('login/', views.login.as_view(), name='login'),
     path('logout', views.logout, name='logout'),
 
-    # path('send_sms_directories', views.send_sms_directories, name='Send_Sms_Directories'),
-    # path('send_sms_mailing_list', views.send_sms_mailing_list, name='Send_Sms_Mailing_List'),
+    # Send Sms With Gammu
+    #path('send_sms_normal/', views.Send_Normal_Sms.as_view(), name='Send_Sms_Normal'),
+    # path('send_directories_sms', views.send_sms_directories, name='Send_Sms_Directories'),
+    # path('send_mailing_list_sms', views.send_sms_mailing_list, name='Send_Sms_Mailing_List'),
+
+    # path('send', views.send, name='Send'),
+
+    # Info Modem Gammu
+    path('status/', views.status, name='modem_status'),
+
 
 
 ]
