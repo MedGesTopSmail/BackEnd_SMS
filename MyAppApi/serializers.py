@@ -63,9 +63,10 @@ class Predefined_MessageSerializer(serializers.ModelSerializer):
 
 
 class Log_MessageSerializer(serializers.ModelSerializer):
-    User = serializers.PrimaryKeyRelatedField(queryset=Users.objects.all(), source='User_Id', write_only=True)
-    Users = UsersSerializer(read_only=True)
+    User_Id = serializers.PrimaryKeyRelatedField(queryset=Users.objects.all(), source='User', write_only=True)
+    User = UsersSerializer(read_only=True)
 
     class Meta:
         model = Log_Message
         fields = '__all__'
+
