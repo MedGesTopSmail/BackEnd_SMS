@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -59,4 +59,13 @@ class Mailing_ListSerializer(serializers.ModelSerializer):
 class Predefined_MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Predefined_Message
+        fields = '__all__'
+
+
+class Log_MessageSerializer(serializers.ModelSerializer):
+    User = serializers.PrimaryKeyRelatedField(queryset=Users.objects.all(), source='User_Id', write_only=True)
+    Users = UsersSerializer(read_only=True)
+
+    class Meta:
+        model = Log_Message
         fields = '__all__'

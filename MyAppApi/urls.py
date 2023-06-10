@@ -1,6 +1,7 @@
 from django.conf.urls.static import static
 from django.urls import path, include
 from . import views
+from django.views.decorators.csrf import csrf_exempt
 from Project_SMS import settings
 
 urlpatterns = [
@@ -34,6 +35,9 @@ urlpatterns = [
     path('mailing_list/', views.Mailing_ListDetail.as_view(), name='Mailing_ListDetail'),
     path('mailing_list/<int:id>/', views.Mailing_ListInfo.as_view(), name='Mailing_ListInfo'),
 
+    # CRUD Traceability Message
+    path('log_message/', views.LogMessage.as_view(), name='Log_Message'),
+
     # Generate Number For Row Table
     path('generate/<str:tag>', views.generate, name='Generate'),
 
@@ -42,14 +46,14 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
 
     # Send Sms With Gammu
-    path('send_normal_sms/', views.Send_Normal_Sms.as_view(), name='Send_Sms_Normal'),
-    path('send_directories_sms/', views.Send_Directories_Sms.as_view(), name='Send_Sms_Directories'),
+    # path('send_normal_sms/', views.Send_Normal_Sms.as_view(), name='Send_Sms_Normal'),
+    # path('send_directories_sms/', views.Send_Directories_Sms.as_view(), name='Send_Sms_Directories'),
     # path('send_mailing_list_sms/', views.Send_Mailing_List_Sms.as_view(), name='Send_Sms_Mailing_List'),
+    # path('send_link_sms/<str:email>/<str:password>/<str:number>/<str:message>/', csrf_exempt(views.Send_Link_Sms), name='Send_Link_Sms'),
 
-    # path('send', views.send, name='Send'),
 
     # Info Modem Gammu
-    path('status/', views.status, name='modem_status'),
+    # path('status/', views.status, name='modem_status'),
 
 
 

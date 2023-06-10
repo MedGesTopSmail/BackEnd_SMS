@@ -43,12 +43,6 @@ class Users(models.Model):
         ('Administrateur', 'Administrateur'),
         ('Super Administrateur', 'Super Administrateur')
     )
-    # PERMISSION_CHOICES = (
-    #     ('Add', 'Add'),
-    #     ('View', 'View'),
-    #     ('Edit', 'Edit'),
-    #     ('Delete', 'Delete')
-    # )
     User_Id = models.AutoField(primary_key=True)
     User_Number = models.CharField(max_length=500)
     User_First_Name = models.CharField(max_length=500)
