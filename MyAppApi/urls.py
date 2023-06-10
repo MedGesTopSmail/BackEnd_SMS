@@ -36,7 +36,8 @@ urlpatterns = [
     path('mailing_list/<int:id>/', views.Mailing_ListInfo.as_view(), name='Mailing_ListInfo'),
 
     # CRUD Traceability Message
-    path('log_message/', views.LogMessage.as_view(), name='Log_Message'),
+    path('log_message/', views.LogMessageDetail.as_view(), name='Log_Message'),
+    path('log_message/<int:id>/', views.LogMessageInfo.as_view(), name='Log_Message'),
 
     # Generate Number For Row Table
     path('generate/<str:tag>', views.generate, name='Generate'),

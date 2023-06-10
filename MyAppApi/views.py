@@ -951,13 +951,24 @@ class MessageInfo(APIView):
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-class LogMessage(APIView):
+class LogMessageDetail(APIView):
     def get(self, request):
-        obj = Log_Message.objects.filter(deleted_by__isnull=True)
+        obj = Log_Message.objects.filter(deleted_by__isnull=True).order_by('created_at')
         serializer = serializers.Log_MessageSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
 
+
+class LogMessageInfo(APIView):
+    def get(self, request, id):
+        try:
+            obj = Log_Message.objects.get(Id=id)
+            serializer = serializers.Log_MessageSerializer(obj)
+            data = serializer.data
+            return JsonResponse(data, safe=False)
+        except Log_Message.DoesNotExist:
+            message = {"message": "Message non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 # @csrf_exempt
 class login(APIView):
     def post(self, request):
