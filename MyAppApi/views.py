@@ -1116,7 +1116,99 @@ class Send_Normal_Sms(APIView):
             }
             return JsonResponse(message)
 
-
+# # Sending Normal Message with Gammu
+# class Send_Normal_Sms(APIView):
+#     def post(self, request):
+#         Numbers_Liste = request.data['Numbers']
+#         Message = request.data['Message']
+#         User = request.data['User']
+#         Date = request.data['Date']
+#
+#         # Create a temporary file for the configuration
+#         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#         temp_config_file.write(CONFIG_CONTENT_2.encode())
+#         temp_config_file.close()
+#
+#         # Create object for talking with phone
+#         state_machine = gammu.StateMachine()
+#         # Read the configuration from the given file
+#         state_machine.ReadConfig(Filename=temp_config_file.name)
+#         # Connect to the phone
+#         state_machine.Init()
+#
+#         success_count = 0
+#         failed_numbers = []
+#         total_count = len(Numbers_Liste)
+#
+#         if not Date:
+#             for number in Numbers_Liste:
+#                 try:
+#                     if len(Message) <= 160:
+#                         message = {
+#                             "Text": Message,
+#                             "SMSC": {"Location": 1},
+#                             "Number": number,
+#                             "Coding": "Unicode_No_Compression"
+#                         }
+#                         result = state_machine.SendSMS(message)
+#                     else:
+#                         smsinfo = {
+#                             "Class": -1,
+#                             "Unicode": True,
+#                             "Entries": [
+#                                 {
+#                                     "ID": "ConcatenatedTextLong",
+#                                     "Buffer": Message
+#                                 }
+#                             ],
+#                         }
+#                         encoded = gammu.EncodeSMS(smsinfo)
+#                         for message in encoded:
+#                             message["SMSC"] = {"Location": 1}
+#                             message["Number"] = number
+#                             result = state_machine.SendSMS(message)
+#                     if result:
+#                         # Add log Message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem="2",
+#                             Type_Envoi="Sms Avec Numero",
+#                             Message=Message,
+#                             User_id=User,
+#                         )
+#                         log_message.save()
+#                         success_count += 1
+#                     else:
+#                         failed_numbers.append(number)
+#                 except Exception as e:
+#                     failed_numbers.append(number)
+#                     print(f"Failed to send SMS to number {number}: {str(e)}")
+#
+#             if success_count == total_count:
+#                 message = {
+#                     "type": "success",
+#                     "message": "SMS envoyé à tous les numéros"
+#                 }
+#             else:
+#                 message = {
+#                     "type": "error",
+#                     "message": "Échec de l'envoi de certains SMS",
+#                     "failed_numbers": failed_numbers
+#                 }
+#
+#             state_machine.Terminate()
+#             # Delete the temporary configuration file
+#             os.remove(temp_config_file.name)
+#             return JsonResponse(message)
+#         else:
+#             # Code to send message at the defined date
+#             message = {
+#                 "type": "success",
+#                 "message": "SMS programmé"
+#             }
+#             return JsonResponse(message)
+#
+#
 # # Sending Sms To Directories with Gammu
 # class Send_Directories_Sms(APIView):
 #     def post(self, request):
@@ -1181,6 +1273,7 @@ class Send_Normal_Sms(APIView):
 #                     log_message = Log_Message(
 #                         Recipient=number,
 #                         Modem="2",
+#                         Type_Envoi="Sms Avec Repertoire",
 #                         Message=Message,
 #                         User_id=User,
 #                     )
@@ -1298,6 +1391,7 @@ class Send_Normal_Sms(APIView):
 #                                 log_message = Log_Message(
 #                                     Recipient=number,
 #                                     Modem="2",
+#                                     Type_Envoi="Sms Avec Liste D'envoi",
 #                                     Message=Message,
 #                                     User_id=User,
 #                                 )
@@ -1378,6 +1472,7 @@ class Send_Normal_Sms(APIView):
 #                                 log_message = Log_Message(
 #                                     Recipient=phone_number,
 #                                     Modem="2",
+#                                     Type_Envoi="Sms Avec Liste D'envoi",
 #                                     Message=message_l,
 #                                     User_id=User,
 #                                 )
@@ -1430,7 +1525,7 @@ class Send_Normal_Sms(APIView):
 #     # Return the phone information as JSON
 #     return JsonResponse(phone_info, safe=False)
 #
-#
+# # Sending Link Message with Gammu
 # @csrf_exempt
 # def Send_Link_Sms(request, email, password, number, message):
 #     obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
