@@ -90,6 +90,37 @@ host = localhost
 Database = smsdb
 """
 
+
+CONFIG_CONTENT_3 = """
+[gammu]
+port = /dev/ttyUSB11
+model = at
+connection = at115200
+synchronizetime = yes
+logformat = nothing
+use_locking =
+gammuloc =
+
+[smsd]
+HangupCalls=1
+CheckBattery=0
+CheckSecurity=0
+logfile = /home/mysms/backend/addon/logs/gammu/modem-3
+commtimeout = 10
+sendtimeout = 10
+logformat = textalldate
+Receive=0
+deliveryreport = sms
+phoneid = 3
+debuglevel = 255
+Service = sql
+Driver = native_mysql
+User = mysms
+Password = P@SsW0rd
+host = localhost
+Database = smsdb
+"""
+
 # file_config_1="/var/www/html/modem-1"
 # file_config_2="/root/modem-2"
 
@@ -1537,48 +1568,48 @@ def logout(request):
 #         return JsonResponse(response)
 #
 #
-# # Send Email in Sms
-# class Email_To_Sms(APIView):
-#     def post(self, request):
-#         # Variable for Configuration Server
-#         client = request.data['Client']
-#         host_name = request.data['HostName']
-#         email_server = request.data['Email_Server']
-#         password_server = request.data['Password_Server']
-#         port = request.data['Port']
-#
-#         # Variable for Configuration User
-#         email_user = request.data['Email_User']
-#         password_user = request.data['Password_User']
-#         recipient = request.data['Recipient']
-#         reload_time = request.data['Reload_Time']
-#
-#         response_data = {}
-#
-#         try:
-#             if client == "imap":
-#                 # Execute the imap.py script with variables as arguments
-#                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myimaplib.py",
-#                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
-#                                 reload_time])
-#
-#             elif client == "pop3":
-#                 # Execute the pop.py script with variables as arguments
-#                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/mypoplib.py",
-#                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
-#                                 reload_time])
-#
-#             else:
-#                 # Execute the owa.py script with variables as arguments
-#                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myowalib.py",
-#                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
-#                                 reload_time])
-#
-#             response_data["type"] = "success"
-#             response_data["message"] = "Scripts executed successfully."
-#
-#         except Exception as e:
-#             response_data["type"] = "error"
-#             response_data["message"] = str(e)
-#
-#         return JsonResponse(response_data)
+# Send Email in Sms
+class Email_To_Sms(APIView):
+    def post(self, request):
+        # Variable for Configuration Server
+        client = request.data['Client']
+        host_name = request.data['HostName']
+        email_server = request.data['Email_Server']
+        password_server = request.data['Password_Server']
+        port = request.data['Port']
+
+        # Variable for Configuration User
+        email_user = request.data['Email_User']
+        password_user = request.data['Password_User']
+        recipient = request.data['Recipient']
+        reload_time = request.data['Reload_Time']
+
+        response_data = {}
+
+        try:
+            if client == "imap":
+                # Execute the imap.py script with variables as arguments
+                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myimaplib.py",
+                                host_name, port, email_server, password_server, email_user, password_user, recipient,
+                                reload_time])
+
+            elif client == "pop3":
+                # Execute the pop.py script with variables as arguments
+                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/mypoplib.py",
+                                host_name, port, email_server, password_server, email_user, password_user, recipient,
+                                reload_time])
+
+            else:
+                # Execute the owa.py script with variables as arguments
+                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myowalib.py",
+                                host_name, port, email_server, password_server, email_user, password_user, recipient,
+                                reload_time])
+
+            response_data["type"] = "success"
+            response_data["message"] = "Scripts executed successfully."
+
+        except Exception as e:
+            response_data["type"] = "error"
+            response_data["message"] = str(e)
+
+        return JsonResponse(response_data)
