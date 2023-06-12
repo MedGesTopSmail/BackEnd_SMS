@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message, Email_To_Sms
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -70,3 +70,7 @@ class Log_MessageSerializer(serializers.ModelSerializer):
         model = Log_Message
         fields = '__all__'
 
+class Email_To_SmsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Email_To_Sms
+        fields = '__all__'

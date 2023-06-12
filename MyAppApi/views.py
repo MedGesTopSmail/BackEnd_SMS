@@ -25,7 +25,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
 from .serializers import Mailing_ListSerializer, Log_MessageSerializer
 from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number, Log_Message
+    Relation_Directory_Number, Log_Message, Email_To_Sms
 
 #### Config Files ####
 
@@ -1453,19 +1453,20 @@ def logout(request):
 #
 #
 # # Get Modem  (Phone Info)
-# def status(request):
-#     # Execute the SQL query
-#     with connection.cursor() as cursor:
-#         query = """ SELECT * FROM smsdb.phones """
-#         cursor.execute(query)
-#         phone_info = cursor.fetchall()
+# class Status(APIView):
+#     def get(self, request):
+#         # Execute the SQL query
+#         with connection.cursor() as cursor:
+#             query = """ SELECT * FROM smsdb.phones """
+#             cursor.execute(query)
+#             phone_info = cursor.fetchall()
 #
-#     # Format the result as a list of dictionaries
-#     columns = [col[0] for col in cursor.description]
-#     phone_info = [dict(zip(columns, row)) for row in phone_info]
+#         # Format the result as a list of dictionaries
+#         columns = [col[0] for col in cursor.description]
+#         phone_info = [dict(zip(columns, row)) for row in phone_info]
 #
-#     # Return the phone information as JSON
-#     return JsonResponse(phone_info, safe=False)
+#         # Return the phone information as JSON
+#         return JsonResponse(phone_info, safe=False)
 #
 #
 # @csrf_exempt
@@ -1569,7 +1570,12 @@ def logout(request):
 #
 #
 # Send Email in Sms
-class Email_To_Sms(APIView):
+class EmailToSms(APIView):
+    def get(self, request):
+        obj = Email_To_Sms.objects
+        serializer = serializers.Email_To_SmsSerializer(obj, many=True)
+        data = serializer.data
+        return JsonResponse(data, safe=False)
     def post(self, request):
         # Variable for Configuration Server
         client = request.data['Client']
@@ -1585,29 +1591,39 @@ class Email_To_Sms(APIView):
         reload_time = request.data['Reload_Time']
 
         response_data = {}
-
         try:
+            # Clear the Email_To_Sms table
+            Email_To_Sms.objects.all().delete()
+
             if client == "imap":
                 # Execute the imap.py script with variables as arguments
                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myimaplib.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
-
             elif client == "pop3":
                 # Execute the pop.py script with variables as arguments
                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/mypoplib.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
-
             else:
                 # Execute the owa.py script with variables as arguments
                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myowalib.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
-
+            email_to_sms = Email_To_Sms(
+                Client=client,
+                HostName=host_name,
+                Email_Server=email_server,
+                Password_Server=password_server,
+                Port=port,
+                Recipient=recipient,
+                Email_User=email_user,
+                Password_User=password_user,
+                Reload_Time=reload_time
+            )
+            email_to_sms.save()
             response_data["type"] = "success"
             response_data["message"] = "Scripts executed successfully."
-
         except Exception as e:
             response_data["type"] = "error"
             response_data["message"] = str(e)
