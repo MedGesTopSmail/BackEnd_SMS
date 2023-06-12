@@ -52,6 +52,8 @@ urlpatterns = [
     # path('send_mailing_list_sms/', views.Send_Mailing_List_Sms.as_view(), name='Send_Sms_Mailing_List'),
     # path('send_link_sms/<str:email>/<str:password>/<str:number>/<str:message>/', csrf_exempt(views.Send_Link_Sms), name='Send_Link_Sms'),
 
+    # Email to Sms
+    path('email_to_sms/', views.Email_To_Sms.as_view(), name='email_to_sms'),
 
     # Info Modem Gammu
     # path('status/', views.status, name='modem_status'),
