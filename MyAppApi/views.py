@@ -30,7 +30,7 @@ from .models import Entities, Groups, Users, Number_List, Directory, Predefined_
 #### Config Files ####
 
 
-config_content_1 = """
+CONFIG_CONTENT_1 = """
 [gammu]
 port = /dev/ttyUSB3
 model = at
@@ -1066,17 +1066,9 @@ def logout(request):
 #         User = request.data['User']
 #         Date = request.data['Date']
 #
-#         # Create a temporary file for the configuration
-#         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#         temp_config_file.write(CONFIG_CONTENT_2.encode())
-#         temp_config_file.close()
-#
-#         # Create object for talking with phone
-#         state_machine = gammu.StateMachine()
-#         # Read the configuration from the given file
-#         state_machine.ReadConfig(Filename=temp_config_file.name)
-#         # Connect to the phone
-#         state_machine.Init()
+#         config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#         total_configs = len(config_files)
+#         config_index = 0
 #
 #         success_count = 0
 #         failed_numbers = []
@@ -1085,6 +1077,21 @@ def logout(request):
 #         if not Date:
 #             for number in Numbers_Liste:
 #                 try:
+#                     # Get the current configuration content
+#                     config_content = config_files[config_index]
+#
+#                     # Create a temporary file for the configuration
+#                     temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                     temp_config_file.write(config_content.encode())
+#                     temp_config_file.close()
+#
+#                     # Create object for talking with phone
+#                     state_machine = gammu.StateMachine()
+#                     # Read the configuration from the given file
+#                     state_machine.ReadConfig(Filename=temp_config_file.name)
+#                     # Connect to the phone
+#                     state_machine.Init()
+#
 #                     if len(Message) <= 160:
 #                         message = {
 #                             "Text": Message,
@@ -1109,19 +1116,39 @@ def logout(request):
 #                             message["SMSC"] = {"Location": 1}
 #                             message["Number"] = number
 #                             result = state_machine.SendSMS(message)
+#
 #                     if result:
 #                         # Add log Message
 #                         log_message = Log_Message(
 #                             Recipient=number,
-#                             Modem="2",
+#                             Modem=str(config_index + 1),
 #                             Type_Envoi="Sms Avec Numero",
-#                             Message=Message,
-#                             User_id=User,
+#                             Status="Envoyer",
+#                             Message = Message,
+#                             User_id = User,
 #                         )
 #                         log_message.save()
 #                         success_count += 1
 #                     else:
+#                         # Add log Message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Sms Avec Numero",
+#                             Status="Non Envoyer",
+#                             Message = Message,
+#                             User_id = User,
+#                         )
+#                         log_message.save()
 #                         failed_numbers.append(number)
+#
+#                     state_machine.Terminate()
+#                     # Delete the temporary configuration file
+#                     os.remove(temp_config_file.name)
+#
+#                     # Move to the next configuration file
+#                     config_index = (config_index + 1) % total_configs
+#
 #                 except Exception as e:
 #                     failed_numbers.append(number)
 #                     print(f"Failed to send SMS to number {number}: {str(e)}")
@@ -1138,9 +1165,6 @@ def logout(request):
 #                     "failed_numbers": failed_numbers
 #                 }
 #
-#             state_machine.Terminate()
-#             # Delete the temporary configuration file
-#             os.remove(temp_config_file.name)
 #             return JsonResponse(message)
 #         else:
 #             # Code to send message at the defined date
@@ -1159,17 +1183,13 @@ def logout(request):
 #         User = request.data['User']
 #         Date = request.data['Date']
 #
-#         # Create a temporary file for the configuration
-#         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#         temp_config_file.write(CONFIG_CONTENT_2.encode())
-#         temp_config_file.close()
+#         config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#         total_configs = len(config_files)
+#         config_index = 0
 #
-#         # Create object for talking with phone
-#         state_machine = gammu.StateMachine()
-#         # Read the configuration from the given file
-#         state_machine.ReadConfig(Filename=temp_config_file.name)
-#         # Connect to the phone
-#         state_machine.Init()
+#         success_count = 0
+#         failed_numbers = []
+#         total_count = 0
 #
 #         # Get all numbers from the directory
 #         directory = Directory.objects.filter(deleted_by__isnull=True).get(Directory_Id=directory_id)
@@ -1178,51 +1198,86 @@ def logout(request):
 #         for number in relation_numbers:
 #             serialized_numbers.append(serializers.RelationDirectoryNumberSerializer(number).data["Number"])
 #         numbers_list = [number["Number"] for number in serialized_numbers]
-#
-#         success_count = 0
-#         failed_numbers = []
 #         total_count = len(numbers_list)
 #
 #         if not Date:
 #             for number in numbers_list:
-#                 if len(Message) <= 160:
-#                     message = {
-#                         "Text": Message,
-#                         "SMSC": {"Location": 1},
-#                         "Number": number,
-#                         "Coding": "Unicode_No_Compression"
-#                     }
-#                     result = state_machine.SendSMS(message)
-#                 else:
-#                     smsinfo = {
-#                         "Class": -1,
-#                         "Unicode": True,
-#                         "Entries": [
-#                             {
-#                                 "ID": "ConcatenatedTextLong",
-#                                 "Buffer": Message
-#                             }
-#                         ],
-#                     }
-#                     encoded = gammu.EncodeSMS(smsinfo)
-#                     for message in encoded:
-#                         message["SMSC"] = {"Location": 1}
-#                         message["Number"] = number
-#                         result = state_machine.SendSMS(message)
+#                 try:
+#                     # Get the current configuration content
+#                     config_content = config_files[config_index]
 #
-#                 if result:
-#                     # Add log Message
-#                     log_message = Log_Message(
-#                         Recipient=number,
-#                         Modem="2",
-#                         Type_Envoi="Sms Avec Repertoire",
-#                         Message=Message,
-#                         User_id=User,
-#                     )
-#                     log_message.save()
-#                     success_count += 1
-#                 else:
+#                     # Create a temporary file for the configuration
+#                     temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                     temp_config_file.write(config_content.encode())
+#                     temp_config_file.close()
+#
+#                     # Create object for talking with phone
+#                     state_machine = gammu.StateMachine()
+#                     # Read the configuration from the given file
+#                     state_machine.ReadConfig(Filename=temp_config_file.name)
+#                     # Connect to the phone
+#                     state_machine.Init()
+#
+#                     if len(Message) <= 160:
+#                         message = {
+#                             "Text": Message,
+#                             "SMSC": {"Location": 1},
+#                             "Number": number,
+#                             "Coding": "Unicode_No_Compression"
+#                         }
+#                         result = state_machine.SendSMS(message)
+#                     else:
+#                         smsinfo = {
+#                             "Class": -1,
+#                             "Unicode": True,
+#                             "Entries": [
+#                                 {
+#                                     "ID": "ConcatenatedTextLong",
+#                                     "Buffer": Message
+#                                 }
+#                             ],
+#                         }
+#                         encoded = gammu.EncodeSMS(smsinfo)
+#                         for message in encoded:
+#                             message["SMSC"] = {"Location": 1}
+#                             message["Number"] = number
+#                             result = state_machine.SendSMS(message)
+#
+#                     if result:
+#                         # Add log Message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Sms Avec Repertoire",
+#                             Status="Envoyer",
+#                             Message = Message,
+#                             User_id = User,
+#                         )
+#                         log_message.save()
+#                         success_count += 1
+#                     else:
+#                         # Add log Message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Sms Avec Repertoire",
+#                             Status="Non Envoyer",
+#                             Message = Message,
+#                             User_id = User,
+#                         )
+#                         log_message.save()
+#                         failed_numbers.append(number)
+#
+#                     state_machine.Terminate()
+#                     # Delete the temporary configuration file
+#                     os.remove(temp_config_file.name)
+#
+#                     # Move to the next configuration file
+#                     config_index = (config_index + 1) % total_configs
+#
+#                 except Exception as e:
 #                     failed_numbers.append(number)
+#                     print(f"Failed to send SMS to number {number}: {str(e)}")
 #
 #             if success_count == total_count:
 #                 message = {
@@ -1236,9 +1291,6 @@ def logout(request):
 #                     "failed_numbers": failed_numbers
 #                 }
 #
-#             state_machine.Terminate()
-#             # Delete the temporary configuration file
-#             os.remove(temp_config_file.name)
 #             return JsonResponse(message)
 #         else:
 #             # Code to send message at the defined date
@@ -1252,15 +1304,18 @@ def logout(request):
 # # Sending Sms To Mailing List with Gammu
 # class Send_Mailing_List_Sms(APIView):
 #     def post(self, request):
-#
 #         mailing_list_id = request.data['MailingList']
 #         Message = request.data['Message']
 #         User = request.data['User']
 #         Date = request.data['Date']
 #
+#         config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#         total_configs = len(config_files)
+#         config_index = 0
+#
 #         # Create a temporary file for the configuration
 #         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#         temp_config_file.write(CONFIG_CONTENT_2.encode())
+#         temp_config_file.write(config_files[config_index].encode())
 #         temp_config_file.close()
 #
 #         # Create object for talking with phone
@@ -1297,50 +1352,87 @@ def logout(request):
 #                     total_count = len(Numbers)
 #                     if not Date:
 #                         for number in Numbers:
-#                             # Send a normal message if the message length is less than or equal to 160 characters
-#                             if len(Message) <= 160:
-#                                 message = {
-#                                     "Text": Message,
-#                                     "SMSC": {"Location": 1},
-#                                     "Number": number,
-#                                     "Coding": "Unicode_No_Compression"
-#                                 }
-#                                 # Actually send the message
-#                                 result = state_machine.SendSMS(message)
-#                             else:
-#                                 # Create SMS info structure
-#                                 smsinfo = {
-#                                     "Class": -1,
-#                                     "Unicode": True,
-#                                     "Entries": [
-#                                         {
-#                                             "ID": "ConcatenatedTextLong",
-#                                             "Buffer": Message
-#                                         }
-#                                     ],
-#                                 }
-#                                 # Encode messages
-#                                 encoded = gammu.EncodeSMS(smsinfo)
-#                                 # Send messages
-#                                 for message in encoded:
-#                                     # Fill in numbers
-#                                     message["SMSC"] = {"Location": 1}
-#                                     message["Number"] = number
+#                             try:
+#                                 # Get the current configuration content
+#                                 config_content = config_files[config_index]
+#
+#                                 # Create a temporary file for the configuration
+#                                 temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                                 temp_config_file.write(config_content.encode())
+#                                 temp_config_file.close()
+#
+#                                 # Create object for talking with phone
+#                                 state_machine = gammu.StateMachine()
+#                                 # Read the configuration from the given file
+#                                 state_machine.ReadConfig(Filename=temp_config_file.name)
+#                                 # Connect to the phone
+#                                 state_machine.Init()
+#
+#                                 # Send a normal message if the message length is less than or equal to 160 characters
+#                                 if len(Message) <= 160:
+#                                     message = {
+#                                         "Text": Message,
+#                                         "SMSC": {"Location": 1},
+#                                         "Number": number,
+#                                         "Coding": "Unicode_No_Compression"
+#                                     }
 #                                     # Actually send the message
 #                                     result = state_machine.SendSMS(message)
-#                             if result:
-#                                 # Add log Message
-#                                 log_message = Log_Message(
-#                                     Recipient=number,
-#                                     Modem="2",
-#                                     Type_Envoi="Sms Avec Liste D'envoi",
-#                                     Message=Message,
-#                                     User_id=User,
-#                                 )
-#                                 log_message.save()
-#                                 success_count += 1
-#                             else:
-#                                 failed_numbers.append(number)
+#                                 else:
+#                                     # Create SMS info structure
+#                                     smsinfo = {
+#                                         "Class": -1,
+#                                         "Unicode": True,
+#                                         "Entries": [
+#                                             {
+#                                                 "ID": "ConcatenatedTextLong",
+#                                                 "Buffer": Message
+#                                             }
+#                                         ],
+#                                     }
+#                                     # Encode messages
+#                                     encoded = gammu.EncodeSMS(smsinfo)
+#                                     # Send messages
+#                                     for message in encoded:
+#                                         # Fill in numbers
+#                                         message["SMSC"] = {"Location": 1}
+#                                         message["Number"] = number
+#                                         # Actually send the message
+#                                         result = state_machine.SendSMS(message)
+#
+#                                 if result:
+#                                     # Add log Message
+#                                     log_message = Log_Message(
+#                                         Recipient=number,
+#                                         Modem=str(config_index + 1),
+#                                         Type_Envoi="Sms Avec Liste D'envoi",
+#                                         Status="Envoyer",
+#                                         Message = Message,
+#                                         User_id = User,
+#                                     )
+#                                     log_message.save()
+#                                     success_count += 1
+#                                 else:
+#                                     # Add log Message
+#                                     log_message = Log_Message(
+#                                         Recipient=number,
+#                                         Modem=str(config_index + 1),
+#                                         Type_Envoi="Sms Avec Liste D'envoi",
+#                                         Status="Non Envoyer",
+#                                         Message = Message,
+#                                         User_id = User,
+#                                     )
+#                                     log_message.save()
+#                                     failed_numbers.append(number)
+#
+#                             finally:
+#                                 state_machine.Terminate()
+#                                 # Delete the temporary configuration file
+#                                 os.remove(temp_config_file.name)
+#
+#                             # Move to the next configuration file
+#                             config_index = (config_index + 1) % total_configs
+#
 #                         if success_count == total_count:
 #                             message = {
 #                                 "type": "success",
@@ -1352,9 +1444,7 @@ def logout(request):
 #                                 "message": "Échec de l'envoi de certains SMS",
 #                                 "failed_numbers": failed_numbers
 #                             }
-#                         state_machine.Terminate()
-#                         # Delete the temporary configuration file
-#                         os.remove(temp_config_file.name)
+#
 #                         return JsonResponse(message)
 #
 #                     else:
@@ -1379,49 +1469,87 @@ def logout(request):
 #                         for item in file_data:
 #                             phone_number = item['Phone_Number']
 #                             message_l = item['Message']
-#                             if len(message_l) <= 160:
-#                                 message_data = {
-#                                     "Text": message_l,
-#                                     "SMSC": {"Location": 1},
-#                                     "Number": phone_number,
-#                                     "Coding": "Unicode_No_Compression"
-#                                 }
-#                                 # Actually send the message
-#                                 result = state_machine.SendSMS(message_data)
-#                             else:
-#                                 # Create SMS info structure
-#                                 smsinfo = {
-#                                     "Class": -1,
-#                                     "Unicode": True,
-#                                     "Entries": [
-#                                         {
-#                                             "ID": "ConcatenatedTextLong",
-#                                             "Buffer": message_l
-#                                         }
-#                                     ],
-#                                 }
-#                                 # Encode messages
-#                                 encoded = gammu.EncodeSMS(smsinfo)
-#                                 # Send messages
-#                                 for message in encoded:
-#                                     # Fill in numbers
-#                                     message["SMSC"] = {"Location": 1}
-#                                     message["Number"] = phone_number
+#
+#                             try:
+#                                 # Get the current configuration content
+#                                 config_content = config_files[config_index]
+#
+#                                 # Create a temporary file for the configuration
+#                                 temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                                 temp_config_file.write(config_content.encode())
+#                                 temp_config_file.close()
+#
+#                                 # Create object for talking with phone
+#                                 state_machine = gammu.StateMachine()
+#                                 # Read the configuration from the given file
+#                                 state_machine.ReadConfig(Filename=temp_config_file.name)
+#                                 # Connect to the phone
+#                                 state_machine.Init()
+#
+#                                 if len(message_l) <= 160:
+#                                     message_data = {
+#                                         "Text": message_l,
+#                                         "SMSC": {"Location": 1},
+#                                         "Number": phone_number,
+#                                         "Coding": "Unicode_No_Compression"
+#                                     }
 #                                     # Actually send the message
-#                                     result = state_machine.SendSMS(message)
-#                             if result:
-#                                 # Add log Message
-#                                 log_message = Log_Message(
-#                                     Recipient=phone_number,
-#                                     Modem="2",
-#                                     Type_Envoi="Sms Avec Liste D'envoi",
-#                                     Message=message_l,
-#                                     User_id=User,
-#                                 )
-#                                 log_message.save()
-#                                 success_count += 1
-#                             else:
-#                                 failed_numbers.append(phone_number)
+#                                     result = state_machine.SendSMS(message_data)
+#                                 else:
+#                                     # Create SMS info structure
+#                                     smsinfo = {
+#                                         "Class": -1,
+#                                         "Unicode": True,
+#                                         "Entries": [
+#                                             {
+#                                                 "ID": "ConcatenatedTextLong",
+#                                                 "Buffer": message_l
+#                                             }
+#                                         ],
+#                                     }
+#                                     # Encode messages
+#                                     encoded = gammu.EncodeSMS(smsinfo)
+#                                     # Send messages
+#                                     for message in encoded:
+#                                         # Fill in numbers
+#                                         message["SMSC"] = {"Location": 1}
+#                                         message["Number"] = phone_number
+#                                         # Actually send the message
+#                                         result = state_machine.SendSMS(message)
+#
+#                                 if result:
+#                                     # Add log Message
+#                                     log_message = Log_Message(
+#                                         Recipient=phone_number,
+#                                         Modem=str(config_index + 1),
+#                                         Type_Envoi="Sms Avec Liste D'envoi",
+#                                         Status="Envoyer",
+#                                         Message = message_l,
+#                                         User_id = User,
+#                                     )
+#                                     log_message.save()
+#                                     success_count += 1
+#                                 else:
+#                                     # Add log Message
+#                                     log_message = Log_Message(
+#                                         Recipient=phone_number,
+#                                         Modem=str(config_index + 1),
+#                                         Type_Envoi="Sms Avec Liste D'envoi",
+#                                         Status="Non Envoyer",
+#                                         Message = message_l,
+#                                         User_id = User,
+#                                     )
+#                                     log_message.save()
+#                                     failed_numbers.append(phone_number)
+#
+#                             finally:
+#                                 state_machine.Terminate()
+#                                 # Delete the temporary configuration file
+#                                 os.remove(temp_config_file.name)
+#
+#                             # Move to the next configuration file
+#                             config_index = (config_index + 1) % total_configs
+#
 #                         if success_count == total_count:
 #                             message = {
 #                                 "type": "success",
@@ -1433,9 +1561,7 @@ def logout(request):
 #                                 "message": "Échec de l'envoi de certains SMS",
 #                                 "failed_numbers": failed_numbers
 #                             }
-#                         state_machine.Terminate()
-#                         # Delete the temporary configuration file
-#                         os.remove(temp_config_file.name)
+#
 #                         return JsonResponse(message)
 #                     else:
 #                         # Code to send message at the defined date
@@ -1468,7 +1594,7 @@ def logout(request):
 #         # Return the phone information as JSON
 #         return JsonResponse(phone_info, safe=False)
 #
-#
+# # Sending Sms Link with Gammu
 # @csrf_exempt
 # def Send_Link_Sms(request, email, password, numbers, message):
 #     obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
@@ -1480,80 +1606,110 @@ def logout(request):
 #
 #         # Verify password
 #         if check_password(password, user.get("User_Password")):
-#             # Create a temporary file for the configuration
-#             temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#             temp_config_file.write(CONFIG_CONTENT_2.encode())
-#             temp_config_file.close()
+#             try:
+#                 config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#                 total_configs = len(config_files)
+#                 config_index = 0
 #
-#             # Create object for talking with phone
-#             state_machine = gammu.StateMachine()
-#             # Read the configuration from the given file
-#             state_machine.ReadConfig(Filename=temp_config_file.name)
-#             # Connect to the phone
-#             state_machine.Init()
+#                 response = {
+#                     "type": "success",
+#                     "message": "SMS envoyé"
+#                 }
 #
-#             response = {
-#                 "type": "success",
-#                 "message": "SMS envoyé"
-#             }
+#                 number_list = ast.literal_eval(numbers)  # Split the comma-separated numbers into a list
 #
-#             number_list = ast.literal_eval(numbers)  # Split the comma-separated numbers into a list
+#                 for number in number_list:
+#                     try:
+#                         # Get the current configuration content
+#                         config_content = config_files[config_index]
 #
-#             for number in number_list:
-#                 try:
-#                     if len(message) <= 160:
-#                         sms = {
-#                             "Text": message,
-#                             "SMSC": {"Location": 1},
-#                             "Number": number,
-#                             "Coding": "Unicode_No_Compression"
-#                         }
-#                         result = state_machine.SendSMS(sms)
-#                     else:
-#                         smsinfo = {
-#                             "Class": -1,
-#                             "Unicode": True,
-#                             "Entries": [
-#                                 {
-#                                     "ID": "ConcatenatedTextLong",
-#                                     "Buffer": message
-#                                 }
-#                             ],
-#                         }
-#                         encoded = gammu.EncodeSMS(smsinfo)
-#                         for msg in encoded:
-#                             msg["SMSC"] = {"Location": 1}
-#                             msg["Number"] = number
-#                             result = state_machine.SendSMS(msg)
+#                         # Create a temporary file for the configuration
+#                         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                         temp_config_file.write(config_content.encode())
+#                         temp_config_file.close()
 #
-#                     if not result:
+#                         # Create object for talking with phone
+#                         state_machine = gammu.StateMachine()
+#                         # Read the configuration from the given file
+#                         state_machine.ReadConfig(Filename=temp_config_file.name)
+#                         # Connect to the phone
+#                         state_machine.Init()
+#
+#                         if len(message) <= 160:
+#                             sms = {
+#                                 "Text": message,
+#                                 "SMSC": {"Location": 1},
+#                                 "Number": number,
+#                                 "Coding": "Unicode_No_Compression"
+#                             }
+#                             result = state_machine.SendSMS(sms)
+#                         else:
+#                             smsinfo = {
+#                                 "Class": -1,
+#                                 "Unicode": True,
+#                                 "Entries": [
+#                                     {
+#                                         "ID": "ConcatenatedTextLong",
+#                                         "Buffer": message
+#                                     }
+#                                 ],
+#                             }
+#                             encoded = gammu.EncodeSMS(smsinfo)
+#                             for msg in encoded:
+#                                 msg["SMSC"] = {"Location": 1}
+#                                 msg["Number"] = number
+#                                 result = state_machine.SendSMS(msg)
+#
+#                         if result:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem=str(config_index + 1),
+#                                 Type_Envoi="Sms Avec Link",
+#                                 Status="Envoyer",
+#                                 Message = message,
+#                                 User_id = user.get('User_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                         else:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem=str(config_index + 1),
+#                                 Type_Envoi="Sms Avec Link",
+#                                 Status="Non Envoyer",
+#                                 Message = message,
+#                                 User_id = user.get('User_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                             response = {
+#                                 "type": "error",
+#                                 "message": "Message non envoyé pour le numéro " + number,
+#                             }
+#                             break
+#
+#                         state_machine.Terminate()
+#                         # Delete the temporary configuration file
+#                         os.remove(temp_config_file.name)
+#
+#                         # Move to the next configuration file
+#                         config_index = (config_index + 1) % total_configs
+#
+#                     except Exception as e:
 #                         response = {
 #                             "type": "error",
-#                             "message": "Message non envoyé pour le numéro " + number,
+#                             "message": "Message non envoyé",
 #                         }
-#                         break
+#                         return JsonResponse(response)
 #
-#                     # Add log message
-#                     log_message = Log_Message(
-#                         Recipient=number,
-#                         Modem="2",
-#                         Type_Envoi="Sms Avec Link",
-#                         Message=message,
-#                         User_id=user.get('User_Id'),  # Use the User_Id from the User object
-#                     )
-#                     log_message.save()
+#                 return JsonResponse(response)
 #
-#                 except Exception as e:
-#                     response = {
-#                         "type": "error",
-#                         "message": "Message non envoyé",
-#                     }
-#                     return JsonResponse(response)
-#
-#             state_machine.Terminate()
-#             # Delete the temporary configuration file
-#             os.remove(temp_config_file.name)
-#             return JsonResponse(response)
+#             except Exception as e:
+#                 response = {
+#                     "type": "error",
+#                     "message": "Une erreur s'est produite lors de l'envoi du SMS",
+#                 }
+#                 return JsonResponse(response)
 #
 #         else:
 #             response = {
@@ -1567,8 +1723,8 @@ def logout(request):
 #             "message": "Email incorrect",
 #         }
 #         return JsonResponse(response)
-#
-#
+
+
 # Send Email in Sms
 class EmailToSms(APIView):
     def get(self, request):

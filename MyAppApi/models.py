@@ -173,6 +173,7 @@ class Log_Message(models.Model):
     Recipient = models.CharField(max_length=500)
     Modem = models.CharField(max_length=500)
     Type_Envoi = models.CharField(max_length=500)
+    Status = models.CharField(max_length=500)
     Message = models.CharField(max_length=500)
     User = models.ForeignKey(Users, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

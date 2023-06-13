@@ -227,6 +227,7 @@ class Migration(migrations.Migration):
                 ('Recipient', models.CharField(max_length=500)),
                 ('Modem', models.CharField(max_length=500)),
                 ('Type_Envoi', models.CharField(max_length=500)),
+                ('Status', models.CharField(max_length=500)),
                 ('Message', models.CharField(max_length=500)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
