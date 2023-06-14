@@ -1736,7 +1736,8 @@ class EmailToSms(APIView):
         obj = Email_To_Sms.objects
         serializer = serializers.Email_To_SmsSerializer(obj, many=True)
         data = serializer.data[0]
-        data["Recipient"] = list(data.get("Recipient").split(","))
+        # Convert String to List
+        data["Recipient"] = ast.literal_eval(data.get("Recipient"))
         return JsonResponse(data, safe=False)
 
     def post(self, request):
