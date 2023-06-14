@@ -1848,11 +1848,11 @@ class SmsNotSendDetail(APIView):
 
 
 class SmsNotSendInfo(APIView):
-    def put(self, request, id):
+    def patch(self, request, id):
         try:
             obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=id)
             obj.Send_Back = 'False'  # Set Send_Back to False
-            serializer = Log_MessageSerializer(obj, data=request.data)
+            serializer = Log_MessageSerializer(obj, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 message = {
