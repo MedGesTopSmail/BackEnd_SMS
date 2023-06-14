@@ -1852,7 +1852,7 @@ class SmsNotSendInfo(APIView):
         try:
             obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=id)
             obj.Send_Back = 'False'  # Set Send_Back to False
-            serializer = Log_MessageSerializer(obj, partial=True)
+            serializer = Log_MessageSerializer(obj, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 message = {
