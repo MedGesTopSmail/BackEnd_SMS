@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
             name='Entities',
             fields=[
                 ('Entity_Id', models.AutoField(primary_key=True, serialize=False)),
-                ('Entity_Number', models.CharField(max_length=8)),
+                ('Entity_Number', models.CharField(max_length=500)),
                 ('Entity_Name', models.CharField(max_length=500)),
                 ('Entity_Description', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
@@ -233,7 +233,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_by', models.IntegerField(default=None, null=True)),
                 ('deleted_at', models.DateTimeField(default=None, null=True)),
-                ('Send_Back', models.BooleanField(null=True, default=None)),
+                ('Send_Back', models.CharField(choices=[('True', 'True'), ('False', 'False')], default=None, max_length=500, null=True)),
                 ('User', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='MyAppApi.users')),
             ],
             options={

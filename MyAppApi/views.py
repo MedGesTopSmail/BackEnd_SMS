@@ -1835,9 +1835,32 @@ class EmailToSms(APIView):
         return JsonResponse(response_data)
 
 
-class SmsNotSend(APIView):
+class SmsNotSendDetail(APIView):
     def get(self, request):
-        obj = Log_Message.objects.filter(Status="Non Envoyer")
-        serializer = serializers.Log_MessageSerializer(obj, many=True)
+        obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True)
+        serializer = Log_MessageSerializer(obj, many=True)
         data = serializer.data
         return JsonResponse(data, safe=False)
+
+    def post (self, request):
+        Number = request.data["Number"]
+        Message = request.data["Message"]
+
+
+class SmsNotSendInfo(APIView):
+    def put(self, request, id):
+        try:
+            obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=id)
+            obj.Send_Back = 'False'  # Set Send_Back to False
+            serializer = Log_MessageSerializer(obj, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                message = {
+                    "type": "success",
+                    "message": "Message Ignorer Avec Succes"
+                }
+                return JsonResponse(message)
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Log_Message.DoesNotExist:
+            message = {"message": "Message non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)

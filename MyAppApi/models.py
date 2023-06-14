@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 # Create Table Entities
 class Entities(models.Model):
     Entity_Id = models.AutoField(primary_key=True)
-    Entity_Number = models.CharField(max_length=8)
+    Entity_Number = models.CharField(max_length=500)
     Entity_Name = models.CharField(max_length=500)
     Entity_Description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -169,13 +169,17 @@ class Predefined_Message(models.Model):
 
 
 class Log_Message(models.Model):
+    Send_Back_CHOICES = (
+        ('True', 'True'),
+        ('False', 'False')
+    )
     Id = models.AutoField(primary_key=True)
     Recipient = models.CharField(max_length=500)
     Modem = models.CharField(max_length=500)
     Type_Envoi = models.CharField(max_length=500)
     Status = models.CharField(max_length=500)
-    Send_Back = models.BooleanField(null=True, default=None)
     Message = models.CharField(max_length=500)
+    Send_Back = models.CharField(max_length=500, null=True, default=None, choices=Send_Back_CHOICES)
     User = models.ForeignKey(Users, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
