@@ -90,7 +90,6 @@ host = localhost
 Database = smsdb
 """
 
-
 CONFIG_CONTENT_3 = """
 [gammu]
 port = /dev/ttyUSB11
@@ -120,6 +119,7 @@ Password = P@SsW0rd
 host = localhost
 Database = smsdb
 """
+
 
 # file_config_1="/var/www/html/modem-1"
 # file_config_2="/root/modem-2"
@@ -166,7 +166,7 @@ def generate(self, tag):
         }
         return JsonResponse(data)
 
-
+# CRUD Entities
 class EntitiesDetail(APIView):
     def get(self, request):
         obj = Entities.objects.filter(deleted_by__isnull=True)
@@ -274,7 +274,7 @@ class EntitiesInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD Groups
 class GroupsDetail(APIView):
     queryset = Groups.objects.filter(deleted_by__isnull=True).all()
 
@@ -383,7 +383,7 @@ class GroupsInfo(APIView):
             message = {"message": "Group not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD Users
 class UsersDetail(APIView):
     def get(self, request):
         obj = Users.objects.filter(deleted_by__isnull=True)
@@ -497,7 +497,7 @@ class UsersInfo(APIView):
             message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD NumberList
 class NumberListDetail(APIView):
     def get(self, request):
         obj = Number_List.objects.filter(deleted_by__isnull=True)
@@ -603,7 +603,7 @@ class NumberListInfo(APIView):
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD Directory
 class DirectoryDetail(APIView):
     def get(self, request):
         obj = Directory.objects.filter(deleted_by__isnull=True)
@@ -743,7 +743,7 @@ class DirectoryInfo(APIView):
             message = {"message": "Directory not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD Message
 class Mailing_ListDetail(APIView):
     def get(self, request):
         obj = Mailing_List.objects.filter(deleted_by__isnull=True)
@@ -876,7 +876,7 @@ class Mailing_ListInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# CRUD Message
 class MessageDetail(APIView):
     def get(self, request):
         obj = Predefined_Message.objects.filter(deleted_by__isnull=True)
@@ -984,6 +984,7 @@ class MessageInfo(APIView):
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+# CRUD Traceability Message
 class LogMessageDetail(APIView):
     def get(self, request):
         obj = Log_Message.objects.filter(deleted_by__isnull=True).order_by('created_at')
@@ -1002,6 +1003,8 @@ class LogMessageInfo(APIView):
         except Log_Message.DoesNotExist:
             message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
+
 # @csrf_exempt
 class login(APIView):
     def post(self, request):
@@ -1046,6 +1049,7 @@ class login(APIView):
             }
             return JsonResponse(message)
 
+
 def logout(request):
     # Logout the user
     auth.logout(request)
@@ -1056,6 +1060,23 @@ def logout(request):
         "message": "Logout successful"
     }
     return JsonResponse(message)
+
+
+# Get Modem  (Phone Info)
+class Status(APIView):
+    def get(self, request):
+        # Execute the SQL query
+        with connection.cursor() as cursor:
+            query = """ SELECT * FROM smsdb.phones """
+            cursor.execute(query)
+            phone_info = cursor.fetchall()
+
+        # Format the result as a list of dictionaries
+        columns = [col[0] for col in cursor.description]
+        phone_info = [dict(zip(columns, row)) for row in phone_info]
+
+        # Return the phone information as JSON
+        return JsonResponse(phone_info, safe=False)
 
 
 # # Sending Normal Message with Gammu
@@ -1124,8 +1145,8 @@ def logout(request):
 #                             Modem=str(config_index + 1),
 #                             Type_Envoi="Sms Avec Numero",
 #                             Status="Envoyer",
-#                             Message = Message,
-#                             User_id = User,
+#                             Message=Message,
+#                             User_id=User,
 #                         )
 #                         log_message.save()
 #                         success_count += 1
@@ -1136,8 +1157,8 @@ def logout(request):
 #                             Modem=str(config_index + 1),
 #                             Type_Envoi="Sms Avec Numero",
 #                             Status="Non Envoyer",
-#                             Message = Message,
-#                             User_id = User,
+#                             Message=Message,
+#                             User_id=User,
 #                         )
 #                         log_message.save()
 #                         failed_numbers.append(number)
@@ -1250,8 +1271,8 @@ def logout(request):
 #                             Modem=str(config_index + 1),
 #                             Type_Envoi="Sms Avec Repertoire",
 #                             Status="Envoyer",
-#                             Message = Message,
-#                             User_id = User,
+#                             Message=Message,
+#                             User_id=User,
 #                         )
 #                         log_message.save()
 #                         success_count += 1
@@ -1262,8 +1283,8 @@ def logout(request):
 #                             Modem=str(config_index + 1),
 #                             Type_Envoi="Sms Avec Repertoire",
 #                             Status="Non Envoyer",
-#                             Message = Message,
-#                             User_id = User,
+#                             Message=Message,
+#                             User_id=User,
 #                         )
 #                         log_message.save()
 #                         failed_numbers.append(number)
@@ -1407,8 +1428,8 @@ def logout(request):
 #                                         Modem=str(config_index + 1),
 #                                         Type_Envoi="Sms Avec Liste D'envoi",
 #                                         Status="Envoyer",
-#                                         Message = Message,
-#                                         User_id = User,
+#                                         Message=Message,
+#                                         User_id=User,
 #                                     )
 #                                     log_message.save()
 #                                     success_count += 1
@@ -1419,8 +1440,8 @@ def logout(request):
 #                                         Modem=str(config_index + 1),
 #                                         Type_Envoi="Sms Avec Liste D'envoi",
 #                                         Status="Non Envoyer",
-#                                         Message = Message,
-#                                         User_id = User,
+#                                         Message=Message,
+#                                         User_id=User,
 #                                     )
 #                                     log_message.save()
 #                                     failed_numbers.append(number)
@@ -1524,8 +1545,8 @@ def logout(request):
 #                                         Modem=str(config_index + 1),
 #                                         Type_Envoi="Sms Avec Liste D'envoi",
 #                                         Status="Envoyer",
-#                                         Message = message_l,
-#                                         User_id = User,
+#                                         Message=message_l,
+#                                         User_id=User,
 #                                     )
 #                                     log_message.save()
 #                                     success_count += 1
@@ -1536,8 +1557,8 @@ def logout(request):
 #                                         Modem=str(config_index + 1),
 #                                         Type_Envoi="Sms Avec Liste D'envoi",
 #                                         Status="Non Envoyer",
-#                                         Message = message_l,
-#                                         User_id = User,
+#                                         Message=message_l,
+#                                         User_id=User,
 #                                     )
 #                                     log_message.save()
 #                                     failed_numbers.append(phone_number)
@@ -1577,22 +1598,6 @@ def logout(request):
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)})
 #
-#
-# # Get Modem  (Phone Info)
-# class Status(APIView):
-#     def get(self, request):
-#         # Execute the SQL query
-#         with connection.cursor() as cursor:
-#             query = """ SELECT * FROM smsdb.phones """
-#             cursor.execute(query)
-#             phone_info = cursor.fetchall()
-#
-#         # Format the result as a list of dictionaries
-#         columns = [col[0] for col in cursor.description]
-#         phone_info = [dict(zip(columns, row)) for row in phone_info]
-#
-#         # Return the phone information as JSON
-#         return JsonResponse(phone_info, safe=False)
 #
 # # Sending Sms Link with Gammu
 # @csrf_exempt
@@ -1667,8 +1672,8 @@ def logout(request):
 #                                 Modem=str(config_index + 1),
 #                                 Type_Envoi="Sms Avec Link",
 #                                 Status="Envoyer",
-#                                 Message = message,
-#                                 User_id = user.get('User_Id'),  # Use the User_Id from the User object
+#                                 Message=message,
+#                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
 #                             )
 #                             log_message.save()
 #                         else:
@@ -1678,8 +1683,8 @@ def logout(request):
 #                                 Modem=str(config_index + 1),
 #                                 Type_Envoi="Sms Avec Link",
 #                                 Status="Non Envoyer",
-#                                 Message = message,
-#                                 User_id = user.get('User_Id'),  # Use the User_Id from the User object
+#                                 Message=message,
+#                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
 #                             )
 #                             log_message.save()
 #                             response = {
@@ -1725,7 +1730,6 @@ def logout(request):
 #         return JsonResponse(response)
 
 
-# Send Email in Sms
 class EmailToSms(APIView):
     def get(self, request):
         obj = Email_To_Sms.objects
@@ -1733,6 +1737,7 @@ class EmailToSms(APIView):
         data = serializer.data[0]
         data["Recipient"] = list(data.get("Recipient").split(","))
         return JsonResponse(data, safe=False)
+
     def post(self, request):
         # Variable for Configuration Server
         client = request.data['Client']
@@ -1757,32 +1762,76 @@ class EmailToSms(APIView):
                 subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myimaplib.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
+
+                email_to_sms = Email_To_Sms(
+                    Client=client,
+                    HostName=host_name,
+                    Email_Server=email_server,
+                    Password_Server=password_server,
+                    Port=port,
+                    Recipient=recipient,
+                    Email_User=email_user,
+                    Password_User=password_user,
+                    Reload_Time=reload_time
+                )
+                email_to_sms.save()
+
+                response_data["type"] = "success"
+                response_data["message"] = "Scripts IMAP a été exécuté avec succès."
+
             elif client == "pop3":
                 # Execute the pop.py script with variables as arguments
-                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/mypoplib.py",
+                subprocess.run(["python", "media/test.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
+
+                email_to_sms = Email_To_Sms(
+                    Client=client,
+                    HostName=host_name,
+                    Email_Server=email_server,
+                    Password_Server=password_server,
+                    Port=port,
+                    Recipient=recipient,
+                    Email_User=email_user,
+                    Password_User=password_user,
+                    Reload_Time=reload_time
+                )
+                email_to_sms.save()
+
+                response_data["type"] = "success"
+                response_data["message"] = "Scripts POP3 a été exécuté avec succès."
             else:
                 # Execute the owa.py script with variables as arguments
-                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myowalib.py",
+                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/test.py",
                                 host_name, port, email_server, password_server, email_user, password_user, recipient,
                                 reload_time])
-            email_to_sms = Email_To_Sms(
-                Client=client,
-                HostName=host_name,
-                Email_Server=email_server,
-                Password_Server=password_server,
-                Port=port,
-                Recipient=recipient,
-                Email_User=email_user,
-                Password_User=password_user,
-                Reload_Time=reload_time
-            )
-            email_to_sms.save()
-            response_data["type"] = "success"
-            response_data["message"] = "Scripts executed successfully."
+
+                email_to_sms = Email_To_Sms(
+                    Client=client,
+                    HostName=host_name,
+                    Email_Server=email_server,
+                    Password_Server=password_server,
+                    Port=port,
+                    Recipient=recipient,
+                    Email_User=email_user,
+                    Password_User=password_user,
+                    Reload_Time=reload_time
+                )
+                email_to_sms.save()
+
+                response_data["type"] = "success"
+                response_data["message"] = "Scripts OWA a été exécuté avec succès."
+
         except Exception as e:
             response_data["type"] = "error"
             response_data["message"] = str(e)
 
-        return JsonResponse(response_data)
+        return JsonResponse(response_data + ' ' +recipient)
+
+
+class SmsNotSend(APIView):
+    def get(self, request):
+        obj = Log_Message.objects.filter(Status="Non Envoyer")
+        serializer = serializers.Log_MessageSerializer(obj, many=True)
+        data = serializer.data
+        return JsonResponse(data, safe=False)

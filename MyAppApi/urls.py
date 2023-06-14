@@ -1,10 +1,11 @@
 from django.conf.urls.static import static
 from django.urls import path, include
 from . import views
-from django.views.decorators.csrf import csrf_exempt
 from Project_SMS import settings
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
+    # Home Page
     path('', views.index, name='index'),
 
     # CRUD Entities
@@ -46,18 +47,18 @@ urlpatterns = [
     path('login/', views.login.as_view(), name='login'),
     path('logout', views.logout, name='logout'),
 
-    # Send Sms With Gammu
+    # Send Sms
     # path('send_normal_sms/', views.Send_Normal_Sms.as_view(), name='Send_Sms_Normal'),
     # path('send_directories_sms/', views.Send_Directories_Sms.as_view(), name='Send_Sms_Directories'),
     # path('send_mailing_list_sms/', views.Send_Mailing_List_Sms.as_view(), name='Send_Sms_Mailing_List'),
-    # path('send_link_sms/<str:email>/<str:password>/<str:number>/<str:message>/', csrf_exempt(views.Send_Link_Sms), name='Send_Link_Sms'),
+    # path('send_link_sms/<str:email>/<str:password>/<str:numbers>/<str:message>/', csrf_exempt(views.Send_Link_Sms),name='Send_Link_Sms'),
+
+    # Sms Not Send
+    path('sms_not_send/', views.SmsNotSend.as_view(), name='sms_not_send'),
 
     # Email to Sms
     path('email_to_sms/', views.EmailToSms.as_view(), name='email_to_sms'),
 
     # Info Modem Gammu
-    # path('status/', views.Status.as_view(), name='Status'),
-
-
-
+    path('status/', views.Status.as_view(), name='Status'),
 ]
