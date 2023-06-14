@@ -233,6 +233,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_by', models.IntegerField(default=None, null=True)),
                 ('deleted_at', models.DateTimeField(default=None, null=True)),
+                ('Send_Back', models.BooleanField(null=True, default=None)),
                 ('User', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='MyAppApi.users')),
             ],
             options={
