@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
@@ -1758,10 +1759,11 @@ class EmailToSms(APIView):
             Email_To_Sms.objects.all().delete()
 
             if client == "imap":
-                # Execute the imap.py script with variables as arguments
-                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/myimaplib.py",
-                                host_name, port, email_server, password_server, email_user, password_user, recipient,
-                                reload_time])
+                # Execute the script for IMAP
+                script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
+                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+                           password_user, recipient, reload_time]
+                subprocess.run(command)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -1780,10 +1782,11 @@ class EmailToSms(APIView):
                 response_data["message"] = "Scripts IMAP a été exécuté avec succès."
 
             elif client == "pop3":
-                # Execute the pop.py script with variables as arguments
-                subprocess.run(["python", "media/test.py",
-                                host_name, port, email_server, password_server, email_user, password_user, recipient,
-                                reload_time])
+                # Execute the script for POP3
+                script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
+                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+                           password_user, recipient, reload_time]
+                subprocess.run(command)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -1800,11 +1803,13 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts POP3 a été exécuté avec succès."
+
             else:
-                # Execute the owa.py script with variables as arguments
-                subprocess.run(["python", "/home/mysms/backend/addon/mail_to_sms/test.py",
-                                host_name, port, email_server, password_server, email_user, password_user, recipient,
-                                reload_time])
+                # Execute the script for OWA
+                script_path = "/media/test.py"
+                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+                           password_user, recipient, reload_time]
+                subprocess.run(command)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -1826,7 +1831,7 @@ class EmailToSms(APIView):
             response_data["type"] = "error"
             response_data["message"] = str(e)
 
-        return JsonResponse(response_data + ' ' +recipient)
+        return JsonResponse(response_data)
 
 
 class SmsNotSend(APIView):
