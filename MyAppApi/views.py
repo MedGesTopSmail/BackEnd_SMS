@@ -25,7 +25,8 @@ from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
 from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
+    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
 
 #### Config Files ####
 
@@ -409,7 +410,8 @@ class UsersDetail(APIView):
             user_id = data.get("User_Id")
 
             user_permission_data = request.data.get("User_Permission")
-            if user_permission_data:
+            user_role_data = request.data.get("User_Role")
+            if user_permission_data and user_role_data:
                 # Add Permission
                 if user_permission_data.get("add") is True:
                     permission_id = 1
@@ -440,6 +442,23 @@ class UsersDetail(APIView):
                     permission_id = 6
                     permission = Permissions.objects.get(Id=permission_id)
                     Permission_User.objects.create(Permission=permission, User=user)
+                # Super Administrateur Roles
+                if user_role_data == "Super Administrateur":
+                    roles_id = [1, 2, 3]
+                    for role_id in roles_id:
+                        role = Roles.objects.get(Id=role_id)
+                        Role_User.objects.create(Role=role, User=user)
+                # Administrateur Roles
+                if user_role_data == "Administrateur":
+                    roles_id = [2, 3]
+                    for role_id in roles_id:
+                        role = Roles.objects.get(Id=role_id)
+                        Role_User.objects.create(Role=role, User=user)
+                # Member Roles
+                if user_role_data == "Member":
+                    role_id = [3]
+                    role = Roles.objects.get(Id=role_id)
+                    Role_User.objects.create(Role=role, User=user)
 
             message = {
                 "type": "success",
@@ -484,11 +503,14 @@ class UsersInfo(APIView):
                         return JsonResponse(message)
 
                 Permission_User.objects.filter(User=id).delete()
+                Role_User.objects.filter(User=id).delete()
                 user = serializer.save()
                 data = serializer.data
 
                 user_permission_data = request.data.get("User_Permission")
-                if user_permission_data:
+                user_role_data = request.data.get("User_Role")
+
+                if user_permission_data and user_role_data:
                     # Add Permission
                     if user_permission_data.get("add") is True:
                         permission_id = 1
@@ -519,6 +541,24 @@ class UsersInfo(APIView):
                         permission_id = 6
                         permission = Permissions.objects.get(Id=permission_id)
                         Permission_User.objects.create(Permission=permission, User=user)
+                    # Super Administrateur Roles
+                    if user_role_data == "Super Administrateur":
+                        roles_id = [1, 2, 3]
+                        for role_id in roles_id:
+                            role = Roles.objects.get(Id=role_id)
+                            Role_User.objects.create(Role=role, User=user)
+                    # Administrateur Roles
+                    if user_role_data == "Administrateur":
+                        roles_id = [2, 3]
+                        for role_id in roles_id:
+                            role = Roles.objects.get(Id=role_id)
+                            Role_User.objects.create(Role=role, User=user)
+                    # Member Roles
+                    if user_role_data == "Member":
+                        role_id = [3]
+                        role = Roles.objects.get(Id=role_id)
+                        Role_User.objects.create(Role=role, User=user)
+
                 message = {
                     "type": "success",
                     "message": "User " + data.get("User_First_Name") + " modifier avec succes",
@@ -542,11 +582,14 @@ class UsersInfo(APIView):
                     }
                     return JsonResponse(message)
                 Permission_User.objects.filter(User=id).delete()
+                Role_User.objects.filter(User=id).delete()
                 user = serializer.save()
                 data = serializer.data
 
                 user_permission_data = request.data.get("User_Permission")
-                if user_permission_data:
+                user_role_data = request.data.get("User_Role")
+
+                if user_permission_data and user_role_data:
                     # Add Permission
                     if user_permission_data.get("add") is True:
                         permission_id = 1
@@ -577,6 +620,23 @@ class UsersInfo(APIView):
                         permission_id = 6
                         permission = Permissions.objects.get(Id=permission_id)
                         Permission_User.objects.create(Permission=permission, User=user)
+                    # Super Administrateur Roles
+                    if user_role_data == "Super Administrateur":
+                        roles_id = [1, 2, 3]
+                        for role_id in roles_id:
+                            role = Roles.objects.get(Id=role_id)
+                            Role_User.objects.create(Role=role, User=user)
+                    # Administrateur Roles
+                    if user_role_data == "Administrateur":
+                        roles_id = [2, 3]
+                        for role_id in roles_id:
+                            role = Roles.objects.get(Id=role_id)
+                            Role_User.objects.create(Role=role, User=user)
+                    # Member Roles
+                    if user_role_data == "Member":
+                        role_id = [3]
+                        role = Roles.objects.get(Id=role_id)
+                        Role_User.objects.create(Role=role, User=user)
                         
                 message = {
                     "type": "success",

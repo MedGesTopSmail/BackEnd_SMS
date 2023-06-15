@@ -1,12 +1,12 @@
 from django.db import migrations
 
 
-
 def insert_initial_data(apps, schema_editor):
     Entities = apps.get_model('MyAppApi', 'Entities')
     Groups = apps.get_model('MyAppApi', 'Groups')
     User = apps.get_model('MyAppApi', 'Users')
     Role = apps.get_model('MyAppApi', 'Roles')
+    Role_User = apps.get_model('MyAppApi', 'Role_User')
     Permissions = apps.get_model('MyAppApi', 'Permissions')
     Permission_User = apps.get_model('MyAppApi', 'Permission_User')
 
@@ -34,17 +34,30 @@ def insert_initial_data(apps, schema_editor):
         Group=group
     )
 
-    Role.objects.create(
+    role_sup = Role.objects.create(
         Role_Name="Super Admin",
         Role_Description="Super Administrateur role"
     )
-    Role.objects.create(
+    role_admin = Role.objects.create(
         Role_Name="Administrateur",
         Role_Description="Administrateur role"
     )
-    Role.objects.create(
+    role_mem = Role.objects.create(
         Role_Name="Member",
         Role_Description="Member role"
+    )
+
+    Role_User.objects.create(
+        User=user,
+        Role=role_sup
+    )
+    Role_User.objects.create(
+        User=user,
+        Role=role_admin
+    )
+    Role_User.objects.create(
+        User=user,
+        Role=role_mem
     )
 
     permission_add = Permissions.objects.create(
