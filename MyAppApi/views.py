@@ -24,9 +24,9 @@ from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .serializers import Mailing_ListSerializer, Log_MessageSerializer
+from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UsedSerializer
 from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number, Log_Message, Email_To_Sms
+    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_Used
 
 #### Config Files ####
 
@@ -1864,3 +1864,128 @@ class SmsNotSendInfo(APIView):
         except Log_Message.DoesNotExist:
             message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
+
+class PermissionsUsed(APIView):
+    def get(self, request, id):
+        try:
+            obj = Permission_Used.objects.filter(User=id)
+            serializer = Permission_UsedSerializer(obj, many=True)
+            data = serializer.data
+            List = []
+            for item in data:
+                List.append(item.get("Permission").get("Permission_Name"))
+            def element_exists(lst, element):
+                # Try to get the index of the element in the list
+                try:
+                    lst.index(element)
+                    # If the element is found, return True
+                    return True
+                # If a ValueError is raised, the element is not in the list
+                except ValueError:
+                    # Return False in this case
+                    return False
+            Permission = {
+                "add": element_exists(List, "add"),
+                "read": element_exists(List, "read"),
+                "update": element_exists(List, "update"),
+                "delete": element_exists(List, "delete"),
+            }
+            return JsonResponse(Permission, safe=False)
+        except Permission_Used.DoesNotExist:
+            message = {"message": "Permission_Used non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
+    # def post(self, request):
+    #     # Variable for Configuration Server
+    #     client = request.data['Client']
+    #     host_name = request.data['HostName']
+    #     email_server = request.data['Email_Server']
+    #     password_server = request.data['Password_Server']
+    #     port = request.data['Port']
+    #
+    #     # Variable for Configuration User
+    #     email_user = request.data['Email_User']
+    #     password_user = request.data['Password_User']
+    #     recipient = request.data['Recipient']
+    #     reload_time = request.data['Reload_Time']
+    #
+    #     response_data = {}
+    #     try:
+    #         # Clear the Email_To_Sms table
+    #         Email_To_Sms.objects.all().delete()
+    #
+    #         if client == "imap":
+    #             # Execute the script for IMAP
+    #             script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
+    #             command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+    #                        password_user, recipient, reload_time]
+    #             subprocess.run(command)
+    #
+    #             email_to_sms = Email_To_Sms(
+    #                 Client=client,
+    #                 HostName=host_name,
+    #                 Email_Server=email_server,
+    #                 Password_Server=password_server,
+    #                 Port=port,
+    #                 Recipient=recipient,
+    #                 Email_User=email_user,
+    #                 Password_User=password_user,
+    #                 Reload_Time=reload_time
+    #             )
+    #             email_to_sms.save()
+    #
+    #             response_data["type"] = "success"
+    #             response_data["message"] = "Scripts IMAP a été exécuté avec succès."
+    #
+    #         elif client == "pop3":
+    #             # Execute the script for POP3
+    #             script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
+    #             command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+    #                        password_user, recipient, reload_time]
+    #             subprocess.run(command)
+    #
+    #             email_to_sms = Email_To_Sms(
+    #                 Client=client,
+    #                 HostName=host_name,
+    #                 Email_Server=email_server,
+    #                 Password_Server=password_server,
+    #                 Port=port,
+    #                 Recipient=recipient,
+    #                 Email_User=email_user,
+    #                 Password_User=password_user,
+    #                 Reload_Time=reload_time
+    #             )
+    #             email_to_sms.save()
+    #
+    #             response_data["type"] = "success"
+    #             response_data["message"] = "Scripts POP3 a été exécuté avec succès."
+    #
+    #         else:
+    #             # Execute the script for OWA
+    #             script_path = "/media/test.py"
+    #             command = ["python", script_path, host_name, port, email_server, password_server, email_user,
+    #                        password_user, recipient, reload_time]
+    #             subprocess.run(command)
+    #
+    #             email_to_sms = Email_To_Sms(
+    #                 Client=client,
+    #                 HostName=host_name,
+    #                 Email_Server=email_server,
+    #                 Password_Server=password_server,
+    #                 Port=port,
+    #                 Recipient=recipient,
+    #                 Email_User=email_user,
+    #                 Password_User=password_user,
+    #                 Reload_Time=reload_time
+    #             )
+    #             email_to_sms.save()
+    #
+    #             response_data["type"] = "success"
+    #             response_data["message"] = "Scripts OWA a été exécuté avec succès."
+    #
+    #     except Exception as e:
+    #         response_data["type"] = "error"
+    #         response_data["message"] = str(e)
+    #
+    #     return JsonResponse(response_data)

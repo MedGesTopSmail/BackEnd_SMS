@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message, Email_To_Sms
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
+    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_Used, Permissions
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -73,4 +74,16 @@ class Log_MessageSerializer(serializers.ModelSerializer):
 class Email_To_SmsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Email_To_Sms
+        fields = '__all__'
+
+class PermissionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permissions
+        fields = '__all__'
+
+class Permission_UsedSerializer(serializers.ModelSerializer):
+    Id = serializers.PrimaryKeyRelatedField(queryset=Permissions.objects.all(), source='Permissions', write_only=True)
+    Permission = PermissionsSerializer(read_only=True)
+    class Meta:
+        model = Permission_Used
         fields = '__all__'
