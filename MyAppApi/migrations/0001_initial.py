@@ -180,7 +180,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Role_Used',
+            name='Role_User',
             fields=[
                 ('Id', models.AutoField(primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
@@ -189,7 +189,7 @@ class Migration(migrations.Migration):
                 ('User', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='MyAppApi.users')),
             ],
             options={
-                'db_table': 'role_used',
+                'db_table': 'role_user',
             },
         ),
         migrations.CreateModel(
@@ -208,7 +208,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Permission_Used',
+            name='Permission_User',
             fields=[
                 ('Id', models.AutoField(primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
@@ -217,7 +217,7 @@ class Migration(migrations.Migration):
                 ('User', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='MyAppApi.users')),
             ],
             options={
-                'db_table': 'permission_used',
+                'db_table': 'permission_user',
             },
         ),
         migrations.CreateModel(

@@ -1,10 +1,14 @@
 from django.db import migrations
 
+
+
 def insert_initial_data(apps, schema_editor):
     Entities = apps.get_model('MyAppApi', 'Entities')
     Groups = apps.get_model('MyAppApi', 'Groups')
     User = apps.get_model('MyAppApi', 'Users')
     Role = apps.get_model('MyAppApi', 'Roles')
+    Permissions = apps.get_model('MyAppApi', 'Permissions')
+    Permission_User = apps.get_model('MyAppApi', 'Permission_User')
 
     entity = Entities.objects.create(
         Entity_Number="ENT0001",
@@ -19,7 +23,7 @@ def insert_initial_data(apps, schema_editor):
         Entity=entity
     )
 
-    User.objects.create(
+    user = User.objects.create(
         User_Number="USR0001",
         User_First_Name="Mohammed",
         User_Last_Name="Ennouaim",
@@ -41,6 +45,56 @@ def insert_initial_data(apps, schema_editor):
     Role.objects.create(
         Role_Name="Member",
         Role_Description="Member role"
+    )
+
+    permission_add = Permissions.objects.create(
+        Permission_Name="add",
+        Permission_Description="Description Add"
+    )
+    permission_view = Permissions.objects.create(
+        Permission_Name="view",
+        Permission_Description="Description View"
+    )
+    permission_update = Permissions.objects.create(
+        Permission_Name="update",
+        Permission_Description="Description Update"
+    )
+    permission_delete = Permissions.objects.create(
+        Permission_Name="delete",
+        Permission_Description="Description Delete"
+    )
+    permission_sms = Permissions.objects.create(
+        Permission_Name="sms",
+        Permission_Description="Description sms"
+    )
+    permission_traceability = Permissions.objects.create(
+        Permission_Name="traceability",
+        Permission_Description="Description Traceability"
+    )
+
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_add
+    )
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_view
+    )
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_update
+    )
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_delete
+    )
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_sms
+    )
+    Permission_User.objects.create(
+        User=user,
+        Permission=permission_traceability
     )
 
 class Migration(migrations.Migration):

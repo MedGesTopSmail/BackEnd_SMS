@@ -233,7 +233,7 @@ class Roles(models.Model):
         return admin_role, super_admin_role, member_role
 
 
-class Role_Used(models.Model):
+class Role_User(models.Model):
     Id = models.AutoField(primary_key=True)
     Role = models.ForeignKey(Roles, on_delete=models.CASCADE)
     User = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -241,7 +241,7 @@ class Role_Used(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "role_used"
+        db_table = "role_user"
 
 
 class Permissions(models.Model):
@@ -257,7 +257,7 @@ class Permissions(models.Model):
         db_table = "permissions"
 
 
-class Permission_Used(models.Model):
+class Permission_User(models.Model):
     Id = models.AutoField(primary_key=True)
     Permission = models.ForeignKey(Permissions, on_delete=models.CASCADE)
     User = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -265,7 +265,7 @@ class Permission_Used(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "permission_used"
+        db_table = "permission_user"
 
 
 class Email_To_Sms(models.Model):

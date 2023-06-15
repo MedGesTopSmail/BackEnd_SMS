@@ -24,9 +24,8 @@ from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UsedSerializer
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_Used
+from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions
 
 #### Config Files ####
 
@@ -385,6 +384,8 @@ class GroupsInfo(APIView):
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
 # CRUD Users
+
+
 class UsersDetail(APIView):
     def get(self, request):
         obj = Users.objects.filter(deleted_by__isnull=True)
@@ -403,13 +404,49 @@ class UsersDetail(APIView):
                 }
                 return JsonResponse(message)
             # Save the user instance to database
-            serializer.save()
+            user = serializer.save()
             data = serializer.data
+            user_id = data.get("User_Id")
+
+            user_permission_data = request.data.get("User_Permission")
+            if user_permission_data:
+                # Add Permission
+                if user_permission_data.get("add") is True:
+                    permission_id = 1
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+                # View Permission
+                if user_permission_data.get("view") is True:
+                    permission_id = 2
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+                # Update Permission
+                if user_permission_data.get("update") is True:
+                    permission_id = 3
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+                # Delete Permission
+                if user_permission_data.get("delete") is True:
+                    permission_id = 4
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+                # Sms Permission
+                if user_permission_data.get("sms") is True:
+                    permission_id = 5
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+                # Traceability Permission
+                if user_permission_data.get("traceability") is True:
+                    permission_id = 6
+                    permission = Permissions.objects.get(Id=permission_id)
+                    Permission_User.objects.create(Permission=permission, User=user)
+
             message = {
                 "type": "success",
                 "message": "User " + data.get("User_First_Name") + " ajouter avec succes",
-                "id": data.get("User_Id")
+                "id": user_id
             }
+
             return JsonResponse(message)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -445,8 +482,43 @@ class UsersInfo(APIView):
                             "message": "Email User " + user_email + " existe deja",
                         }
                         return JsonResponse(message)
-                serializer.save()
+
+                Permission_User.objects.filter(User=id).delete()
+                user = serializer.save()
                 data = serializer.data
+
+                user_permission_data = request.data.get("User_Permission")
+                if user_permission_data:
+                    # Add Permission
+                    if user_permission_data.get("add") is True:
+                        permission_id = 1
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # View Permission
+                    if user_permission_data.get("view") is True:
+                        permission_id = 2
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Update Permission
+                    if user_permission_data.get("update") is True:
+                        permission_id = 3
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Delete Permission
+                    if user_permission_data.get("delete") is True:
+                        permission_id = 4
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Sms Permission
+                    if user_permission_data.get("sms") is True:
+                        permission_id = 5
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Traceability Permission
+                    if user_permission_data.get("traceability") is True:
+                        permission_id = 6
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
                 message = {
                     "type": "success",
                     "message": "User " + data.get("User_First_Name") + " modifier avec succes",
@@ -469,8 +541,43 @@ class UsersInfo(APIView):
                         "message": "Email User " + user_email + " existe deja",
                     }
                     return JsonResponse(message)
-                serializer.save()
+                Permission_User.objects.filter(User=id).delete()
+                user = serializer.save()
                 data = serializer.data
+
+                user_permission_data = request.data.get("User_Permission")
+                if user_permission_data:
+                    # Add Permission
+                    if user_permission_data.get("add") is True:
+                        permission_id = 1
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # View Permission
+                    if user_permission_data.get("view") is True:
+                        permission_id = 2
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Update Permission
+                    if user_permission_data.get("update") is True:
+                        permission_id = 3
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Delete Permission
+                    if user_permission_data.get("delete") is True:
+                        permission_id = 4
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Sms Permission
+                    if user_permission_data.get("sms") is True:
+                        permission_id = 5
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                    # Traceability Permission
+                    if user_permission_data.get("traceability") is True:
+                        permission_id = 6
+                        permission = Permissions.objects.get(Id=permission_id)
+                        Permission_User.objects.create(Permission=permission, User=user)
+                        
                 message = {
                     "type": "success",
                     "message": "User " + data.get("User_First_Name") + " modifier avec succes",
@@ -1965,11 +2072,12 @@ class SmsNotSendInfo(APIView):
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
 
+
 class PermissionsUsed(APIView):
     def get(self, request, id):
         try:
-            obj = Permission_Used.objects.filter(User=id)
-            serializer = Permission_UsedSerializer(obj, many=True)
+            obj = Permission_User.objects.filter(User=id)
+            serializer = Permission_UserSerializer(obj, many=True)
             data = serializer.data
             List = []
             for item in data:
@@ -1993,7 +2101,7 @@ class PermissionsUsed(APIView):
                 "traceability": element_exists(List, "traceability"),
             }
             return JsonResponse(Permission, safe=False)
-        except Permission_Used.DoesNotExist:
+        except Permission_User.DoesNotExist:
             message = {"message": "Permission_Used non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
