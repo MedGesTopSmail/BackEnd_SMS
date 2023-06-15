@@ -35,7 +35,7 @@ def insert_initial_data(apps, schema_editor):
     )
 
     role_sup = Role.objects.create(
-        Role_Name="Super Admin",
+        Role_Name="Super Administrateur",
         Role_Description="Super Administrateur role"
     )
     role_admin = Role.objects.create(

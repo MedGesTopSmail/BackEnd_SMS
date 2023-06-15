@@ -456,7 +456,7 @@ class UsersDetail(APIView):
                         Role_User.objects.create(Role=role, User=user)
                 # Member Roles
                 if user_role_data == "Member":
-                    role_id = [3]
+                    role_id = 3
                     role = Roles.objects.get(Id=role_id)
                     Role_User.objects.create(Role=role, User=user)
 
@@ -555,7 +555,7 @@ class UsersInfo(APIView):
                             Role_User.objects.create(Role=role, User=user)
                     # Member Roles
                     if user_role_data == "Member":
-                        role_id = [3]
+                        role_id = 3
                         role = Roles.objects.get(Id=role_id)
                         Role_User.objects.create(Role=role, User=user)
 
@@ -634,7 +634,7 @@ class UsersInfo(APIView):
                             Role_User.objects.create(Role=role, User=user)
                     # Member Roles
                     if user_role_data == "Member":
-                        role_id = [3]
+                        role_id = 3
                         role = Roles.objects.get(Id=role_id)
                         Role_User.objects.create(Role=role, User=user)
                         
