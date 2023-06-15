@@ -1929,9 +1929,8 @@ class EmailToSms(APIView):
             if client == "imap":
                 # Execute the script for IMAP
                 script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
-                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
-                           password_user, recipient, reload_time]
-                subprocess.run(command)
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
+                subprocess.run(command, shell=True)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -1952,9 +1951,8 @@ class EmailToSms(APIView):
             elif client == "pop3":
                 # Execute the script for POP3
                 script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
-                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
-                           password_user, recipient, reload_time]
-                subprocess.run(command)
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
+                subprocess.run(command, shell=True)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -1974,10 +1972,9 @@ class EmailToSms(APIView):
 
             else:
                 # Execute the script for OWA
-                script_path = "/media/test.py"
-                command = ["python", script_path, host_name, port, email_server, password_server, email_user,
-                           password_user, recipient, reload_time]
-                subprocess.run(command)
+                script_path = "/home/mysms/backend/addon/mail_to_sms/test.py"
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
+                subprocess.run(command, shell=True)
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
