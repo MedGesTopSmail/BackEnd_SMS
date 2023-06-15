@@ -126,7 +126,7 @@ Database = smsdb
 # file_config_2="/root/modem-2"
 
 
-#### End Config Files#############################################################################################################
+#### End Config Files ####
 
 
 def index(request):
@@ -1834,7 +1834,7 @@ class EmailToSms(APIView):
 
         return JsonResponse(response_data)
 
-
+# Send Back Sms Not Send
 class SmsNotSendDetail(APIView):
     def get(self, request):
         obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True)
@@ -1842,9 +1842,108 @@ class SmsNotSendDetail(APIView):
         data = serializer.data
         return JsonResponse(data, safe=False)
 
-    def post (self, request):
+    def post(self, request):
         Number = request.data["Number"]
         Message = request.data["Message"]
+        User = request.data["User"]
+        Sms = request.data["Sms"]
+
+        obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=Sms)
+        obj.Send_Back = 'True'  # Set Send_Back to False
+        serializer = Log_MessageSerializer(obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+
+        config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+        total_configs = len(config_files)
+        config_index = 0
+
+        try:
+            # Get the current configuration content
+            config_content = config_files[config_index]
+
+            # Create a temporary file for the configuration
+            temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+            temp_config_file.write(config_content.encode())
+            temp_config_file.close()
+
+            # Create object for talking with the phone
+            state_machine = gammu.StateMachine()
+
+            # Read the configuration from the given file
+            state_machine.ReadConfig(Filename=temp_config_file.name)
+
+            # Connect to the phone
+            state_machine.Init()
+
+            if len(Message) <= 160:
+                sms = {
+                    "Text": Message,
+                    "SMSC": {"Location": 1},
+                    "Number": Number,
+                    "Coding": "Unicode_No_Compression"
+                }
+                result = state_machine.SendSMS(sms)
+            else:
+                smsinfo = {
+                    "Class": -1,
+                    "Unicode": True,
+                    "Entries": [
+                        {
+                            "ID": "ConcatenatedTextLong",
+                            "Buffer": Message
+                        }
+                    ],
+                }
+                encoded = gammu.EncodeSMS(smsinfo)
+                for msg in encoded:
+                    msg["SMSC"] = {"Location": 1}
+                    msg["Number"] = Number
+                    result = state_machine.SendSMS(msg)
+
+            if result:
+                # Add log message
+                log_message = Log_Message(
+                    Recipient=Number,
+                    Modem=str(config_index + 1),
+                    Type_Envoi="Sms Avec Link",
+                    Status="Envoyer",
+                    Message=Message,
+                    User_id=User
+                )
+                log_message.save()
+                response = {
+                    "type": "success",
+                    "message": "Message envoyé pour le numéro " + Number,
+                }
+            else:
+                # Add log message
+                log_message = Log_Message(
+                    Recipient=Number,
+                    Modem=str(config_index + 1),
+                    Type_Envoi="Sms Avec Link",
+                    Status="Non Envoyer",
+                    Message=Message,
+                    User_id=User
+                )
+                log_message.save()
+                response = {
+                    "type": "error",
+                    "message": "Message non envoyé pour le numéro " + Number,
+                }
+
+            state_machine.Terminate()
+            # Delete the temporary configuration file
+            os.remove(temp_config_file.name)
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            response = {
+                "type": "error",
+                "message":str(e),
+            }
+            return JsonResponse(response)
 
 
 class SmsNotSendInfo(APIView):
