@@ -1986,9 +1986,11 @@ class PermissionsUsed(APIView):
                     return False
             Permission = {
                 "add": element_exists(List, "add"),
-                "read": element_exists(List, "read"),
+                "view": element_exists(List, "view"),
                 "update": element_exists(List, "update"),
                 "delete": element_exists(List, "delete"),
+                "sms": element_exists(List, "sms"),
+                "traceability": element_exists(List, "traceability"),
             }
             return JsonResponse(Permission, safe=False)
         except Permission_Used.DoesNotExist:
