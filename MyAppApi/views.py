@@ -24,7 +24,7 @@ from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer
+from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer, Role_UserSerializer
 from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
     Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
 
@@ -2130,7 +2130,7 @@ class SmsNotSendInfo(APIView):
 
 
 
-class PermissionsUsed(APIView):
+class PermissionsUser(APIView):
     def get(self, request, id):
         try:
             obj = Permission_User.objects.filter(User=id)
@@ -2149,7 +2149,7 @@ class PermissionsUsed(APIView):
                 except ValueError:
                     # Return False in this case
                     return False
-            Permission = {
+            Permissions = {
                 "add": element_exists(List, "add"),
                 "view": element_exists(List, "view"),
                 "update": element_exists(List, "update"),
@@ -2157,9 +2157,37 @@ class PermissionsUsed(APIView):
                 "sms": element_exists(List, "sms"),
                 "traceability": element_exists(List, "traceability"),
             }
-            return JsonResponse(Permission, safe=False)
+            return JsonResponse(Permissions, safe=False)
         except Permission_User.DoesNotExist:
-            message = {"message": "Permission_Used non trouver"}
+            message = {"message": "Permission User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-    # def post(self, request):
+class RoleUser(APIView):
+    def get(self, request, id):
+        try:
+            obj = Role_User.objects.filter(User=id)
+            serializer = Role_UserSerializer(obj, many=True)
+            data = serializer.data
+            List = []
+            for item in data:
+                List.append(item.get("Role").get("Role_Name"))
+            def element_exists(lst, element):
+                # Try to get the index of the element in the list
+                try:
+                    lst.index(element)
+                    # If the element is found, return True
+                    return True
+                # If a ValueError is raised, the element is not in the list
+                except ValueError:
+                    # Return False in this case
+                    return False
+
+            Roles = {
+                "Super_Administrateur": element_exists(List, "Super Administrateur"),
+                "Administrateur": element_exists(List, "Administrateur"),
+                "Member": element_exists(List, "Member"),
+            }
+            return JsonResponse(Roles, safe=False)
+        except Role_User.DoesNotExist:
+            message = {"message": "Role User non trouver"}
+            return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)

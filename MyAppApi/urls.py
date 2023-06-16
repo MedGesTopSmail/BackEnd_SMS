@@ -63,6 +63,9 @@ urlpatterns = [
     # Info Modem Gammu
     path('status/', views.Status.as_view(), name='Status'),
 
-    # Permission Used
-    path('permission_used/<int:id>/', views.PermissionsUsed.as_view(), name='permission_used'),
+    # Permission User
+    path('permission_user/<int:id>/', views.PermissionsUser.as_view(), name='permission_user'),
+
+    # Role User
+    path('role_user/<int:id>/', views.RoleUser.as_view(), name='role_user'),
 ]
