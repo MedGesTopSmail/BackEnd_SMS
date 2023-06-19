@@ -1929,124 +1929,124 @@ class Status(APIView):
 
 
 # Sending Sms Link with Gammu
-@csrf_exempt
-def Send_Email_Sms(request, email, password, numbers, message):
-    obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
-
-    # Check if user exists
-    if obj.exists():
-        serializer = serializers.UsersSerializer(obj, many=True)
-        user = serializer.data[0]
-
-        # Verify password
-        if check_password(password, user.get("User_Password")):
-            try:
-                response = {
-                    "type": "success",
-                    "message": "SMS envoyé"
-                }
-
-                number_list = ast.literal_eval(numbers)  # Split the comma-separated numbers into a list
-
-                for number in number_list:
-                    try:
-                        # Create a temporary file for the configuration
-                        temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-                        temp_config_file.write(CONFIG_CONTENT_4.encode())
-                        temp_config_file.close()
-
-                        # Create object for talking with phone
-                        state_machine = gammu.StateMachine()
-                        # Read the configuration from the given file
-                        state_machine.ReadConfig(Filename=temp_config_file.name)
-                        # Connect to the phone
-                        state_machine.Init()
-
-                        if len(message) <= 160:
-                            sms = {
-                                "Text": message,
-                                "SMSC": {"Location": 1},
-                                "Number": number,
-                                "Coding": "Unicode_No_Compression"
-                            }
-                            result = state_machine.SendSMS(sms)
-                        else:
-                            smsinfo = {
-                                "Class": -1,
-                                "Unicode": True,
-                                "Entries": [
-                                    {
-                                        "ID": "ConcatenatedTextLong",
-                                        "Buffer": message
-                                    }
-                                ],
-                            }
-                            encoded = gammu.EncodeSMS(smsinfo)
-                            for msg in encoded:
-                                msg["SMSC"] = {"Location": 1}
-                                msg["Number"] = number
-                                result = state_machine.SendSMS(msg)
-
-                        if result:
-                            # Add log message
-                            log_message = Log_Message(
-                                Recipient=number,
-                                Modem="4",
-                                Type_Envoi="Sms Avec Link",
-                                Status="Envoyer",
-                                Message=message,
-                                User_id=user.get('User_Id'),  # Use the User_Id from the User object
-                            )
-                            log_message.save()
-                        else:
-                            # Add log message
-                            log_message = Log_Message(
-                                Recipient=number,
-                                Modem="4",
-                                Type_Envoi="Sms Avec Link",
-                                Status="Non Envoyer",
-                                Message=message,
-                                User_id=user.get('User_Id'),  # Use the User_Id from the User object
-                            )
-                            log_message.save()
-                            response = {
-                                "type": "error",
-                                "message": "Message non envoyé pour le numéro " + number,
-                            }
-                            break
-
-                        state_machine.Terminate()
-                        # Delete the temporary configuration file
-                        os.remove(temp_config_file.name)
-
-                    except Exception as e:
-                        response = {
-                            "type": "error",
-                            "message": "Message non envoyé",
-                        }
-                        return JsonResponse(response)
-
-                return JsonResponse(response)
-
-            except Exception as e:
-                response = {
-                    "type": "error",
-                    "message": "Une erreur s'est produite lors de l'envoi du SMS",
-                }
-                return JsonResponse(response)
-
-        else:
-            response = {
-                "type": "warning",
-                "message": "Mot de passe incorrect",
-            }
-            return JsonResponse(response)
-    else:
-        response = {
-            "type": "warning",
-            "message": "Email incorrect",
-        }
-        return JsonResponse(response)
+# @csrf_exempt
+# def Send_Email_Sms(request, email, password, numbers, message):
+#     obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
+#
+#     # Check if user exists
+#     if obj.exists():
+#         serializer = serializers.UsersSerializer(obj, many=True)
+#         user = serializer.data[0]
+#
+#         # Verify password
+#         if check_password(password, user.get("User_Password")):
+#             try:
+#                 response = {
+#                     "type": "success",
+#                     "message": "SMS envoyé"
+#                 }
+#
+#                 number_list = ast.literal_eval(numbers)  # Split the comma-separated numbers into a list
+#
+#                 for number in number_list:
+#                     try:
+#                         # Create a temporary file for the configuration
+#                         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                         temp_config_file.write(CONFIG_CONTENT_4.encode())
+#                         temp_config_file.close()
+#
+#                         # Create object for talking with phone
+#                         state_machine = gammu.StateMachine()
+#                         # Read the configuration from the given file
+#                         state_machine.ReadConfig(Filename=temp_config_file.name)
+#                         # Connect to the phone
+#                         state_machine.Init()
+#
+#                         if len(message) <= 160:
+#                             sms = {
+#                                 "Text": message,
+#                                 "SMSC": {"Location": 1},
+#                                 "Number": number,
+#                                 "Coding": "Unicode_No_Compression"
+#                             }
+#                             result = state_machine.SendSMS(sms)
+#                         else:
+#                             smsinfo = {
+#                                 "Class": -1,
+#                                 "Unicode": True,
+#                                 "Entries": [
+#                                     {
+#                                         "ID": "ConcatenatedTextLong",
+#                                         "Buffer": message
+#                                     }
+#                                 ],
+#                             }
+#                             encoded = gammu.EncodeSMS(smsinfo)
+#                             for msg in encoded:
+#                                 msg["SMSC"] = {"Location": 1}
+#                                 msg["Number"] = number
+#                                 result = state_machine.SendSMS(msg)
+#
+#                         if result:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem="4",
+#                                 Type_Envoi="Sms Avec Link",
+#                                 Status="Envoyer",
+#                                 Message=message,
+#                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                         else:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem="4",
+#                                 Type_Envoi="Sms Avec Link",
+#                                 Status="Non Envoyer",
+#                                 Message=message,
+#                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                             response = {
+#                                 "type": "error",
+#                                 "message": "Message non envoyé pour le numéro " + number,
+#                             }
+#                             break
+#
+#                         state_machine.Terminate()
+#                         # Delete the temporary configuration file
+#                         os.remove(temp_config_file.name)
+#
+#                     except Exception as e:
+#                         response = {
+#                             "type": "error",
+#                             "message": "Message non envoyé",
+#                         }
+#                         return JsonResponse(response)
+#
+#                 return JsonResponse(response)
+#
+#             except Exception as e:
+#                 response = {
+#                     "type": "error",
+#                     "message": "Une erreur s'est produite lors de l'envoi du SMS",
+#                 }
+#                 return JsonResponse(response)
+#
+#         else:
+#             response = {
+#                 "type": "warning",
+#                 "message": "Mot de passe incorrect",
+#             }
+#             return JsonResponse(response)
+#     else:
+#         response = {
+#             "type": "warning",
+#             "message": "Email incorrect",
+#         }
+#         return JsonResponse(response)
 
 class EmailToSms(APIView):
     def get(self, request):
@@ -2080,7 +2080,8 @@ class EmailToSms(APIView):
                 # Execute the script for IMAP
                 script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
                 command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                subprocess.run(command, shell=True)
+                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                pid = process.pid
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2097,12 +2098,14 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts IMAP a été exécuté avec succès."
+                response_data["pid"] = pid + 1
 
             elif client == "pop3":
                 # Execute the script for POP3
                 script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
                 command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                subprocess.run(command, shell=True)
+                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                pid = process.pid
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2119,12 +2122,14 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts POP3 a été exécuté avec succès."
+                response_data["pid"] = pid
 
             else:
                 # Execute the script for OWA
                 script_path = "/home/mysms/backend/addon/mail_to_sms/test.py"
                 command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                subprocess.run(command, shell=True)
+                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                pid = process.pid
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2141,6 +2146,7 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts OWA a été exécuté avec succès."
+                response_data["pid"] = pid
 
         except Exception as e:
             response_data["type"] = "error"
