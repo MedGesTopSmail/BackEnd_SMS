@@ -349,7 +349,7 @@ class GroupsInfo(APIView):
 
     def put(self, request, id):
         try:
-            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
+            obj = Groups.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             serializer = serializers.GroupsSerializer(obj, data=request.data)
             if serializer.is_valid():
                 group_name = serializer.validated_data['Group_Name']
@@ -374,7 +374,7 @@ class GroupsInfo(APIView):
 
     def patch(self, request, id):
         try:
-            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
+            obj = Groups.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             serializer = serializers.GroupsSerializer(obj, data=request.data, partial=True)
             if serializer.is_valid():
                 group_name = serializer.validated_data['Group_Name']
