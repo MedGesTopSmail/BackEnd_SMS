@@ -121,7 +121,6 @@ host = localhost
 Database = smsdb
 """
 
-
 CONFIG_CONTENT_4 = """
 [gammu]
 port = /dev/ttyUSB15
@@ -151,6 +150,7 @@ Password = P@SsW0rd
 host = localhost
 Database = smsdb
 """
+
 
 # file_config_1="/var/www/html/modem-1"
 # file_config_2="/root/modem-2"
@@ -196,6 +196,7 @@ def generate(self, tag):
             "Directory_Number": Directory_Number,
         }
         return JsonResponse(data)
+
 
 # CRUD Entities
 class EntitiesDetail(APIView):
@@ -305,6 +306,7 @@ class EntitiesInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+
 # CRUD Groups
 class GroupsDetail(APIView):
     queryset = Groups.objects.filter(deleted_by__isnull=True).all()
@@ -413,6 +415,7 @@ class GroupsInfo(APIView):
         except Groups.DoesNotExist:
             message = {"message": "Group not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 
 # CRUD Users
 
@@ -667,7 +670,7 @@ class UsersInfo(APIView):
                         role_id = 3
                         role = Roles.objects.get(Id=role_id)
                         Role_User.objects.create(Role=role, User=user)
-                        
+
                 message = {
                     "type": "success",
                     "message": "User " + data.get("User_First_Name") + " modifier avec succes",
@@ -694,6 +697,7 @@ class UsersInfo(APIView):
         except Users.DoesNotExist:
             message = {"message": "User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 
 # CRUD NumberList
 class NumberListDetail(APIView):
@@ -800,6 +804,7 @@ class NumberListInfo(APIView):
         except Number_List.DoesNotExist:
             message = {"message": "Number not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 
 # CRUD Directory
 class DirectoryDetail(APIView):
@@ -941,6 +946,7 @@ class DirectoryInfo(APIView):
             message = {"message": "Directory not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+
 # CRUD Message
 class Mailing_ListDetail(APIView):
     def get(self, request):
@@ -1074,6 +1080,7 @@ class Mailing_ListInfo(APIView):
             message = {"message": "Entity not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+
 # CRUD Message
 class MessageDetail(APIView):
     def get(self, request):
@@ -1181,6 +1188,7 @@ class MessageInfo(APIView):
         except Predefined_Message.DoesNotExist:
             message = {"message": "Message not found"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 
 # CRUD Traceability Message
 class LogMessageDetail(APIView):
@@ -1992,7 +2000,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem="4",
-#                                 Type_Envoi="Sms Avec Link",
+#                                 Type_Envoi="Email To Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
@@ -2003,7 +2011,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem="4",
-#                                 Type_Envoi="Sms Avec Link",
+#                                 Type_Envoi="Email To Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
@@ -2154,6 +2162,7 @@ class EmailToSms(APIView):
 
         return JsonResponse(response_data)
 
+
 # Send Back Sms Not Send
 class SmsNotSendDetail(APIView):
     def get(self, request):
@@ -2285,7 +2294,6 @@ class SmsNotSendInfo(APIView):
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class PermissionsUser(APIView):
     def get(self, request, id):
         try:
@@ -2295,6 +2303,7 @@ class PermissionsUser(APIView):
             List = []
             for item in data:
                 List.append(item.get("Permission").get("Permission_Name"))
+
             def element_exists(lst, element):
                 # Try to get the index of the element in the list
                 try:
@@ -2305,6 +2314,7 @@ class PermissionsUser(APIView):
                 except ValueError:
                     # Return False in this case
                     return False
+
             Permissions = {
                 "add": element_exists(List, "add"),
                 "view": element_exists(List, "view"),
@@ -2327,6 +2337,7 @@ class RoleUser(APIView):
             List = []
             for item in data:
                 List.append(item.get("Role").get("Role_Name"))
+
             def element_exists(lst, element):
                 # Try to get the index of the element in the list
                 try:
