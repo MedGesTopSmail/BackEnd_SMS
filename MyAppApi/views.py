@@ -958,6 +958,13 @@ class Mailing_ListDetail(APIView):
     def post(self, request):
         serializer = Mailing_ListSerializer(data=request.data)
         if serializer.is_valid():
+            Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
+            if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name, deleted_by__isnull=True).exists():
+                message = {
+                    "type": "error",
+                    "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
+                }
+                return JsonResponse(message)
             # Check the type of file (.csv)
             file = request.FILES.get('Mailing_List_Url')
             if file:
@@ -1000,19 +1007,16 @@ class Mailing_ListInfo(APIView):
             obj = Mailing_List.objects.get(Mailing_List_Id=id)
             serializer = serializers.Mailing_ListSerializer(obj, data=request.data)
             if serializer.is_valid():
-
                 Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
-                file = request.FILES.get('Mailing_List_Url')
                 if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-
-                    if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name).filter(
-                            deleted_by__isnull=True).exists():
+                    if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name, deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
                         message = {
                             "type": "error",
                             "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
                         }
                         return JsonResponse(message)
                 # Check the type of file (.csv)
+                file = request.FILES.get('Mailing_List_Url')
                 if file:
                     ext = os.path.splitext(file.name)[1]
                     if ext.lower() != '.csv':
@@ -1038,20 +1042,24 @@ class Mailing_ListInfo(APIView):
             serializer = serializers.Mailing_ListSerializer(obj, data=request.data, partial=True)
             if serializer.is_valid():
                 # Check if Mailing_List_Name is unique
-                mailing_list_name = serializer.validated_data.get('Mailing_List_Name')
-                if Mailing_List.objects.filter(Mailing_List_Name=mailing_list_name).filter(
-                        deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
-                    message = {"message": "Nom de la Liste existe deja"}
-                    return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
+                Mailing_List_Name = serializer.validated_data.get('Mailing_List_Name')
+                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name, deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
+                    message = {
+                        "type": "error",
+                        "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
+                    }
+                    return JsonResponse(message)
 
                 # Check if Mailing_List_File is a .csv file
-                mailing_list_file = request.FILES.get('Mailing_List_File')
-                if mailing_list_file:
-                    ext = os.path.splitext(mailing_list_file.name)[1]
+                file = request.FILES.get('Mailing_List_Url')
+                if file:
+                    ext = os.path.splitext(file.name)[1]
                     if ext.lower() != '.csv':
-                        message = {"message": "Mailing list file must be a .csv file."}
-                        return JsonResponse(message, status=status.HTTP_400_BAD_REQUEST)
-
+                        message = {
+                            "type": "warning",
+                            "message": "Liste doit etre un fichier .csv"
+                        }
+                        return JsonResponse(message)
                 serializer.save()
                 # Return a JSON response with a success message
                 message = {
@@ -1237,7 +1245,7 @@ class login(APIView):
                 token = Token.objects.create(user=new_user)
                 message = {
                     "type": "success",
-                    "message": "Login successful",
+                    "message": "Connexion réussie",
                     "token": token.key,
                     "user": user
                 }
@@ -1245,13 +1253,13 @@ class login(APIView):
             else:
                 message = {
                     "type": "warning",
-                    "message": "Mot de passe Incorrect",
+                    "message": "Mot de passe incorrect",
                 }
                 return JsonResponse(message)
         else:
             message = {
                 "type": "warning",
-                "message": "Email Incorrect",
+                "message": "E-mail incorrect",
             }
             return JsonResponse(message)
 
