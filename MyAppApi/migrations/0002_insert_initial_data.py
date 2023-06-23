@@ -5,6 +5,7 @@ def insert_initial_data(apps, schema_editor):
     Entities = apps.get_model('MyAppApi', 'Entities')
     Groups = apps.get_model('MyAppApi', 'Groups')
     User = apps.get_model('MyAppApi', 'Users')
+    Monitoring = apps.get_model('MyAppApi', 'Monitoring')
     Role = apps.get_model('MyAppApi', 'Roles')
     Role_User = apps.get_model('MyAppApi', 'Role_User')
     Permissions = apps.get_model('MyAppApi', 'Permissions')
@@ -15,14 +16,12 @@ def insert_initial_data(apps, schema_editor):
         Entity_Name="Entite Administrateur",
         Entity_Description="Description Entite Administrateur",
     )
-
     group = Groups.objects.create(
         Group_Number="GR0001",
         Group_Name="Groupe Administrateur",
         Group_Description="Description Groupe Administrateur",
         Entity=entity
     )
-
     user = User.objects.create(
         User_Number="USR0001",
         User_First_Name="Mohammed",
@@ -33,7 +32,18 @@ def insert_initial_data(apps, schema_editor):
         User_Password_Crypt="b'O=V<7Zf-z0IR'",
         Group=group
     )
-
+    Monitoring.objects.create(
+        Monitoring_Email="Nagios@optima-tic.net",
+        Monitoring_Password="pbkdf2_sha256$600000$94lzs5EO5LHXRRztFVHX5p$XP9Nm+i21PYyq/m0CRUclc2HqizrDrLi+8ldixSK61E=",
+        Monitoring_Password_Crypt="b'T0mk#F?dZdZZUK)QZa5vP(V|2S1@v9'",
+        Monitoring_Type="Nagios"
+    )
+    Monitoring.objects.create(
+        Monitoring_Email="Zabbix@optima-tic.net",
+        Monitoring_Password="pbkdf2_sha256$600000$DJreeIuNidsSEoY3BIlAY6$GXl5E4bSdqmbe6yqczr7XFZz/rpjtieIfjiNR2gxnaE=",
+        Monitoring_Password_Crypt="b'PC!R#Fmp{XZZUK)QZa5vP(V|2S1@v9'",
+        Monitoring_Type="Zabbix"
+    )
     role_sup = Role.objects.create(
         Role_Name="Super Administrateur",
         Role_Description="Super Administrateur role"

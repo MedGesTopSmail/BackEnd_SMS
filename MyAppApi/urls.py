@@ -53,6 +53,7 @@ urlpatterns = [
     # path('send_mailing_list_sms/', views.Send_Mailing_List_Sms.as_view(), name='Send_Sms_Mailing_List'),
     # path('send_link_sms/<str:email>/<str:password>/<str:numbers>/<str:message>/', csrf_exempt(views.Send_Link_Sms),name='Send_Link_Sms'),
     # path('send_email_sms/<str:email>/<str:password>/<str:numbers>/<str:message>/', csrf_exempt(views.Send_Email_Sms),name='Send_Link_Sms'),
+    # path('send_monitoring_sms/<str:email>/<str:password>/<str:numbers>/<str:message>/', csrf_exempt(views.Send_Monitoring_Sms),name='Send_Monitoring_Sms'),
 
     # Sms Not Send
     path('sms_not_send/', views.SmsNotSendDetail.as_view(), name='sms_not_send'),

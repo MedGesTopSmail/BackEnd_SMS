@@ -10,6 +10,7 @@ import random
 import tempfile
 import subprocess
 from . import serializers
+from crontab import CronTab
 from django.contrib import auth
 from django.db import connection
 from Project_SMS import settings
@@ -24,9 +25,8 @@ from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer, Role_UserSerializer
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
+from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer, Role_UserSerializer, MonitoringSerializer
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Monitoring, Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
 
 #### Config Files ####
 
@@ -150,10 +150,6 @@ Password = P@SsW0rd
 host = localhost
 Database = smsdb
 """
-
-
-# file_config_1="/var/www/html/modem-1"
-# file_config_2="/root/modem-2"
 
 
 #### End Config Files ####
@@ -418,8 +414,6 @@ class GroupsInfo(APIView):
 
 
 # CRUD Users
-
-
 class UsersDetail(APIView):
     def get(self, request):
         obj = Users.objects.filter(deleted_by__isnull=True)
@@ -1294,6 +1288,23 @@ class Status(APIView):
         return JsonResponse(phone_info, safe=False)
 
 
+# Get Modem  (Phone Info)
+class Status(APIView):
+    def get(self, request):
+        # Execute the SQL query
+        with connection.cursor() as cursor:
+            query = """ SELECT * FROM smsdb.phones """
+            cursor.execute(query)
+            phone_info = cursor.fetchall()
+
+        # Format the result as a list of dictionaries
+        columns = [col[0] for col in cursor.description]
+        phone_info = [dict(zip(columns, row)) for row in phone_info]
+
+        # Return the phone information as JSON
+        return JsonResponse(phone_info, safe=False)
+
+
 # # Sending Normal Message with Gammu
 # class Send_Normal_Sms(APIView):
 #     def post(self, request):
@@ -1812,9 +1823,9 @@ class Status(APIView):
 #
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)})
-#
-#
-# # Sending Sms Link with Gammu
+
+
+# # Sending Sms Link
 # @csrf_exempt
 # def Send_Link_Sms(request, email, password, numbers, message):
 #     obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
@@ -1879,13 +1890,12 @@ class Status(APIView):
 #                                 msg["SMSC"] = {"Location": 1}
 #                                 msg["Number"] = number
 #                                 result = state_machine.SendSMS(msg)
-#
 #                         if result:
 #                             # Add log message
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Sms Avec Link",
+#                                 Type_Envoi="Link Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
@@ -1896,7 +1906,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Sms Avec Link",
+#                                 Type_Envoi="Link Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
@@ -1944,8 +1954,7 @@ class Status(APIView):
 #         }
 #         return JsonResponse(response)
 
-
-# Sending Sms Link with Gammu
+# # Sending Sms Email
 # @csrf_exempt
 # def Send_Email_Sms(request, email, password, numbers, message):
 #     obj = Users.objects.filter(deleted_by__isnull=True).filter(User_Email=email)
@@ -2009,7 +2018,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem="4",
-#                                 Type_Envoi="Email To Sms",
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
@@ -2020,10 +2029,130 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem="4",
-#                                 Type_Envoi="Email To Sms",
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
 #                                 User_id=user.get('User_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                             response = {
+#                                 "type": "error",
+#                                 "message": "Message non envoyé pour le numéro " + number,
+#                             }
+#                             break
+#
+#                         state_machine.Terminate()
+#                         # Delete the temporary configuration file
+#                         os.remove(temp_config_file.name)
+#
+#                     except Exception as e:
+#                         response = {
+#                             "type": "error",
+#                             "message": "Message non envoyé",
+#                         }
+#                         return JsonResponse(response)
+#
+#                 return JsonResponse(response)
+#
+#             except Exception as e:
+#                 response = {
+#                     "type": "error",
+#                     "message": "Une erreur s'est produite lors de l'envoi du SMS",
+#                 }
+#                 return JsonResponse(response)
+#
+#         else:
+#             response = {
+#                 "type": "warning",
+#                 "message": "Mot de passe incorrect",
+#             }
+#             return JsonResponse(response)
+#     else:
+#         response = {
+#             "type": "warning",
+#             "message": "Email incorrect",
+#         }
+#         return JsonResponse(response)
+
+# # Sending Sms Monitoring
+# @csrf_exempt
+# def Send_Monitoring_Sms(request, email, password, numbers, message):
+#     obj = Monitoring.objects.filter(deleted_by__isnull=True).filter(Monitoring_Email=email)
+#
+#     # Check if user exists
+#     if obj.exists():
+#         serializer = serializers.MonitoringSerializer(obj, many=True)
+#         monitoring = serializer.data[0]
+#
+#         # Verify password
+#         if check_password(password, monitoring.get("Monitoring_Password")):
+#             try:
+#                 response = {
+#                     "type": "success",
+#                     "message": "SMS envoyé"
+#                 }
+#
+#                 number_list = ast.literal_eval(numbers)  # Split the comma-separated numbers into a list
+#
+#                 for number in number_list:
+#                     try:
+#                         # Create a temporary file for the configuration
+#                         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#                         temp_config_file.write(CONFIG_CONTENT_4.encode())
+#                         temp_config_file.close()
+#
+#                         # Create object for talking with phone
+#                         state_machine = gammu.StateMachine()
+#                         # Read the configuration from the given file
+#                         state_machine.ReadConfig(Filename=temp_config_file.name)
+#                         # Connect to the phone
+#                         state_machine.Init()
+#
+#                         if len(message) <= 160:
+#                             sms = {
+#                                 "Text": message,
+#                                 "SMSC": {"Location": 1},
+#                                 "Number": number,
+#                                 "Coding": "Unicode_No_Compression"
+#                             }
+#                             result = state_machine.SendSMS(sms)
+#                         else:
+#                             smsinfo = {
+#                                 "Class": -1,
+#                                 "Unicode": True,
+#                                 "Entries": [
+#                                     {
+#                                         "ID": "ConcatenatedTextLong",
+#                                         "Buffer": message
+#                                     }
+#                                 ],
+#                             }
+#                             encoded = gammu.EncodeSMS(smsinfo)
+#                             for msg in encoded:
+#                                 msg["SMSC"] = {"Location": 1}
+#                                 msg["Number"] = number
+#                                 result = state_machine.SendSMS(msg)
+#
+#                         if result:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem="4",
+#                                 Type_Envoi="Monitoring Sms",
+#                                 Status="Envoyer",
+#                                 Message=message,
+#                                 User_id=monitoring.get('Monitoring_Id'),  # Use the User_Id from the User object
+#                             )
+#                             log_message.save()
+#                         else:
+#                             # Add log message
+#                             log_message = Log_Message(
+#                                 Recipient=number,
+#                                 Modem="4",
+#                                 Type_Envoi="Monitoring Sms",
+#                                 Status="Non Envoyer",
+#                                 Message=message,
+#                                 User_id=monitoring.get('Monitoring_Id'),  # Use the User_Id from the User object
 #                             )
 #                             log_message.save()
 #                             response = {
@@ -2096,9 +2225,13 @@ class EmailToSms(APIView):
             if client == "imap":
                 # Execute the script for IMAP
                 script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-                pid = process.pid
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
+
+                # Schedule the cron job
+                cron = CronTab(user='apache')  # Replace 'your_username' with your username
+                job = cron.new(command=command)
+                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
+                cron.write()
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2115,14 +2248,16 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts IMAP a été exécuté avec succès."
-                response_data["pid"] = pid + 1
-
             elif client == "pop3":
                 # Execute the script for POP3
                 script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-                pid = process.pid
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
+
+                # Schedule the cron job
+                cron = CronTab(user='apache')  # Replace 'your_username' with your username
+                job = cron.new(command=command)
+                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
+                cron.write()
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2139,14 +2274,16 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts POP3 a été exécuté avec succès."
-                response_data["pid"] = pid
-
             else:
                 # Execute the script for OWA
-                script_path = "/home/mysms/backend/addon/mail_to_sms/test.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time} &"
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-                pid = process.pid
+                script_path = "/home/mysms/backend/addon/mail_to_sms/myowalib.py"
+                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
+
+                # Schedule the cron job
+                cron = CronTab(user='apache')  # Replace 'your_username' with your username
+                job = cron.new(command=command)
+                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
+                cron.write()
 
                 email_to_sms = Email_To_Sms(
                     Client=client,
@@ -2163,14 +2300,12 @@ class EmailToSms(APIView):
 
                 response_data["type"] = "success"
                 response_data["message"] = "Scripts OWA a été exécuté avec succès."
-                response_data["pid"] = pid
 
         except Exception as e:
             response_data["type"] = "error"
             response_data["message"] = str(e)
 
         return JsonResponse(response_data)
-
 
 # Send Back Sms Not Send
 class SmsNotSendDetail(APIView):
@@ -2244,7 +2379,7 @@ class SmsNotSendDetail(APIView):
     #             log_message = Log_Message(
     #                 Recipient=Number,
     #                 Modem=str(config_index + 1),
-    #                 Type_Envoi="Sms Avec Link",
+    #                 Type_Envoi="Sms Renvoyer",
     #                 Status="Envoyer",
     #                 Message=Message,
     #                 User_id=User
@@ -2259,7 +2394,7 @@ class SmsNotSendDetail(APIView):
     #             log_message = Log_Message(
     #                 Recipient=Number,
     #                 Modem=str(config_index + 1),
-    #                 Type_Envoi="Sms Avec Link",
+    #                 Type_Envoi="Sms Renvoyer",
     #                 Status="Non Envoyer",
     #                 Message=Message,
     #                 User_id=User

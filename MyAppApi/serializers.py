@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, \
-    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
+    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User, Monitoring
 
 
 class EntitiesSerializer(serializers.ModelSerializer):
@@ -24,6 +24,13 @@ class UsersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Users
+        fields = '__all__'
+
+
+class MonitoringSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Monitoring
         fields = '__all__'
 
 

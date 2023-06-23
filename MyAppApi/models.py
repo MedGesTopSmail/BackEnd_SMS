@@ -99,6 +99,21 @@ class Users(models.Model):
         )
         return admin_users
 
+class Monitoring(models.Model):
+    Monitoring_Id = models.AutoField(primary_key=True)
+    Monitoring_Email = models.CharField(max_length=500)
+    Monitoring_Password = models.CharField(max_length=500)
+    Monitoring_Password_Crypt = models.CharField(max_length=500)
+    Monitoring_Type = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_by = models.IntegerField(null=True, default=None)
+    deleted_at = models.DateTimeField(null=True, default=None)
+
+    class Meta:
+        db_table = "monitoring"
+
+
 class Number_List(models.Model):
     Number_Id = models.AutoField(primary_key=True)
     Number_Name = models.CharField(max_length=500)

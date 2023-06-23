@@ -180,6 +180,23 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='Monitoring',
+            fields=[
+                ('Monitoring_Id', models.AutoField(primary_key=True, serialize=False)),
+                ('Monitoring_Email', models.CharField(max_length=500)),
+                ('Monitoring_Password', models.CharField(max_length=500)),
+                ('Monitoring_Password_Crypt', models.CharField(max_length=500)),
+                ('Monitoring_Type', models.CharField(max_length=500)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_by', models.IntegerField(default=None, null=True)),
+                ('deleted_at', models.DateTimeField(default=None, null=True)),
+            ],
+            options={
+                'db_table': 'monitoring',
+            },
+        ),
+        migrations.CreateModel(
             name='Role_User',
             fields=[
                 ('Id', models.AutoField(primary_key=True, serialize=False)),
