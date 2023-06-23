@@ -402,7 +402,7 @@ class GroupsInfo(APIView):
     @csrf_exempt
     def delete(self, request, id):
         try:
-            obj = Groups.objects.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
+            obj = Groups.objects.filter(deleted_by__isnull=True).get(Group_Id=id)
             name = obj.Group_Name
             obj.deleted_at = timezone.now()
             obj.deleted_by = 1
@@ -818,7 +818,7 @@ class DirectoryDetail(APIView):
         serializer = serializers.DirectorySerializer(data=request.data.get("directory"))
         if serializer.is_valid():
             directory_name = serializer.validated_data['Directory_Name']
-            if Directory.objects.filter(Directory_Name=directory_name).filter(deleted_by__isnull=True).exists():
+            if Directory.objects.filter(Directory_Name=directory_name, deleted_by__isnull=True).exists():
                 message = {
                     "type": "error",
                     "message": "Répertoire " + directory_name + " existe déjà",
@@ -868,7 +868,7 @@ class DirectoryInfo(APIView):
             if serializer.is_valid():
                 # Check if Directory_Name is unique
                 directory_name = serializer.validated_data['Directory_Name']
-                if directory_name != request.data.get("directory").get("Directory_Name"):
+                if directory.Directory_Name != request.data.get("directory")['Directory_Name']:
                     if Directory.objects.filter(Directory_Name=directory_name, deleted_by__isnull=True).exists():
                         message = {
                             "type": "error",
@@ -903,7 +903,7 @@ class DirectoryInfo(APIView):
             if serializer.is_valid():
                 # Check if Directory_Name is unique
                 directory_name = serializer.validated_data['Directory_Name']
-                if directory_name != request.data.get("directory").get("Directory_Name"):
+                if directory.Directory_Name != request.data.get("directory")['Directory_Name']:
                     if Directory.objects.filter(Directory_Name=directory_name, deleted_by__isnull=True).exists():
                         message = {
                             "type": "error",
@@ -1043,13 +1043,14 @@ class Mailing_ListInfo(APIView):
             if serializer.is_valid():
                 # Check if Mailing_List_Name is unique
                 Mailing_List_Name = serializer.validated_data.get('Mailing_List_Name')
-                if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name, deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
-                    message = {
-                        "type": "error",
-                        "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
-                    }
-                    return JsonResponse(message)
-
+                if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
+                    if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name,
+                                                   deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
+                        message = {
+                            "type": "error",
+                            "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
+                        }
+                        return JsonResponse(message)
                 # Check if Mailing_List_File is a .csv file
                 file = request.FILES.get('Mailing_List_Url')
                 if file:
