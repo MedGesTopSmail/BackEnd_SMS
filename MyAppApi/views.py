@@ -25,8 +25,10 @@ from django.core.management import call_command
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer, Role_UserSerializer, MonitoringSerializer
-from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Monitoring, Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
+from .serializers import Mailing_ListSerializer, Log_MessageSerializer, Permission_UserSerializer, Role_UserSerializer, \
+    MonitoringSerializer
+from .models import Entities, Groups, Users, Number_List, Directory, Predefined_Message, Mailing_List, Monitoring, \
+    Relation_Directory_Number, Log_Message, Email_To_Sms, Permission_User, Permissions, Roles, Role_User
 
 #### Config Files ####
 
@@ -1003,7 +1005,8 @@ class Mailing_ListInfo(APIView):
             if serializer.is_valid():
                 Mailing_List_Name = serializer.validated_data['Mailing_List_Name']
                 if obj.Mailing_List_Name != request.data['Mailing_List_Name']:
-                    if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name, deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
+                    if Mailing_List.objects.filter(Mailing_List_Name=Mailing_List_Name,
+                                                   deleted_by__isnull=True).exclude(Mailing_List_Id=id).exists():
                         message = {
                             "type": "error",
                             "message": "Liste d'envoi " + Mailing_List_Name + " existe deja",
@@ -1269,23 +1272,6 @@ def logout(request):
         "message": "Logout successful"
     }
     return JsonResponse(message)
-
-
-# Get Modem  (Phone Info)
-class Status(APIView):
-    def get(self, request):
-        # Execute the SQL query
-        with connection.cursor() as cursor:
-            query = """ SELECT * FROM smsdb.phones """
-            cursor.execute(query)
-            phone_info = cursor.fetchall()
-
-        # Format the result as a list of dictionaries
-        columns = [col[0] for col in cursor.description]
-        phone_info = [dict(zip(columns, row)) for row in phone_info]
-
-        # Return the phone information as JSON
-        return JsonResponse(phone_info, safe=False)
 
 
 # Get Modem  (Phone Info)
@@ -1823,8 +1809,8 @@ class Status(APIView):
 #
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)})
-
-
+#
+#
 # # Sending Sms Link
 # @csrf_exempt
 # def Send_Link_Sms(request, email, password, numbers, message):
@@ -1926,6 +1912,16 @@ class Status(APIView):
 #                         config_index = (config_index + 1) % total_configs
 #
 #                     except Exception as e:
+#                     # Add log message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Link Sms",
+#                             Status="Non Envoyer",
+#                             Message=message,
+#                             User_id=user.get('User_Id'),  # Use the User_Id from the User object
+#                         )
+#                         log_message.save()
 #                         response = {
 #                             "type": "error",
 #                             "message": "Message non envoyé",
@@ -1953,7 +1949,7 @@ class Status(APIView):
 #             "message": "Email incorrect",
 #         }
 #         return JsonResponse(response)
-
+#
 # # Sending Sms Email
 # @csrf_exempt
 # def Send_Email_Sms(request, email, password, numbers, message):
@@ -1967,6 +1963,10 @@ class Status(APIView):
 #         # Verify password
 #         if check_password(password, user.get("User_Password")):
 #             try:
+#                 config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#                 total_configs = len(config_files)
+#                 config_index = 0
+#
 #                 response = {
 #                     "type": "success",
 #                     "message": "SMS envoyé"
@@ -1976,9 +1976,12 @@ class Status(APIView):
 #
 #                 for number in number_list:
 #                     try:
+#                         # Get the current configuration content
+#                         config_content = config_files[config_index]
+#
 #                         # Create a temporary file for the configuration
 #                         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#                         temp_config_file.write(CONFIG_CONTENT_4.encode())
+#                         temp_config_file.write(config_content.encode())
 #                         temp_config_file.close()
 #
 #                         # Create object for talking with phone
@@ -2012,12 +2015,11 @@ class Status(APIView):
 #                                 msg["SMSC"] = {"Location": 1}
 #                                 msg["Number"] = number
 #                                 result = state_machine.SendSMS(msg)
-#
 #                         if result:
 #                             # Add log message
 #                             log_message = Log_Message(
 #                                 Recipient=number,
-#                                 Modem="4",
+#                                 Modem=str(config_index + 1),
 #                                 Type_Envoi="Email Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
@@ -2028,7 +2030,7 @@ class Status(APIView):
 #                             # Add log message
 #                             log_message = Log_Message(
 #                                 Recipient=number,
-#                                 Modem="4",
+#                                 Modem=str(config_index + 1),
 #                                 Type_Envoi="Email Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
@@ -2045,7 +2047,20 @@ class Status(APIView):
 #                         # Delete the temporary configuration file
 #                         os.remove(temp_config_file.name)
 #
+#                         # Move to the next configuration file
+#                         config_index = (config_index + 1) % total_configs
+#
 #                     except Exception as e:
+#                     # Add log message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Email Sms",
+#                             Status="Non Envoyer",
+#                             Message=message,
+#                             User_id=user.get('User_Id'),  # Use the User_Id from the User object
+#                         )
+#                         log_message.save()
 #                         response = {
 #                             "type": "error",
 #                             "message": "Message non envoyé",
@@ -2073,7 +2088,7 @@ class Status(APIView):
 #             "message": "Email incorrect",
 #         }
 #         return JsonResponse(response)
-
+#
 # # Sending Sms Monitoring
 # @csrf_exempt
 # def Send_Monitoring_Sms(request, email, password, numbers, message):
@@ -2087,6 +2102,10 @@ class Status(APIView):
 #         # Verify password
 #         if check_password(password, monitoring.get("Monitoring_Password")):
 #             try:
+#                 config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#                 total_configs = len(config_files)
+#                 config_index = 0
+#
 #                 response = {
 #                     "type": "success",
 #                     "message": "SMS envoyé"
@@ -2096,9 +2115,12 @@ class Status(APIView):
 #
 #                 for number in number_list:
 #                     try:
+#                         # Get the current configuration content
+#                         config_content = config_files[config_index]
+#
 #                         # Create a temporary file for the configuration
 #                         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-#                         temp_config_file.write(CONFIG_CONTENT_4.encode())
+#                         temp_config_file.write(config_content.encode())
 #                         temp_config_file.close()
 #
 #                         # Create object for talking with phone
@@ -2132,27 +2154,26 @@ class Status(APIView):
 #                                 msg["SMSC"] = {"Location": 1}
 #                                 msg["Number"] = number
 #                                 result = state_machine.SendSMS(msg)
-#
 #                         if result:
 #                             # Add log message
 #                             log_message = Log_Message(
 #                                 Recipient=number,
-#                                 Modem="4",
-#                                 Type_Envoi="Monitoring Sms",
+#                                 Modem=str(config_index + 1),
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
-#                                 User_id=monitoring.get('Monitoring_Id'),  # Use the User_Id from the User object
+#                                 User_id=monitoring.get('Monitoring_Id'),
 #                             )
 #                             log_message.save()
 #                         else:
 #                             # Add log message
 #                             log_message = Log_Message(
 #                                 Recipient=number,
-#                                 Modem="4",
-#                                 Type_Envoi="Monitoring Sms",
+#                                 Modem=str(config_index + 1),
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
-#                                 User_id=monitoring.get('Monitoring_Id'),  # Use the User_Id from the User object
+#                                 User_id=monitoring.get('Monitoring_Id'),
 #                             )
 #                             log_message.save()
 #                             response = {
@@ -2165,7 +2186,20 @@ class Status(APIView):
 #                         # Delete the temporary configuration file
 #                         os.remove(temp_config_file.name)
 #
+#                         # Move to the next configuration file
+#                         config_index = (config_index + 1) % total_configs
+#
 #                     except Exception as e:
+#                     # Add log message
+#                         log_message = Log_Message(
+#                             Recipient=number,
+#                             Modem=str(config_index + 1),
+#                             Type_Envoi="Email Sms",
+#                             Status="Non Envoyer",
+#                             Message=message,
+#                             User_id=monitoring.get('Monitoring_Id'),
+#                         )
+#                         log_message.save()
 #                         response = {
 #                             "type": "error",
 #                             "message": "Message non envoyé",
@@ -2307,6 +2341,7 @@ class EmailToSms(APIView):
 
         return JsonResponse(response_data)
 
+
 # Send Back Sms Not Send
 class SmsNotSendDetail(APIView):
     def get(self, request):
@@ -2437,7 +2472,7 @@ class SmsNotSendInfo(APIView):
             message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
-
+# Permissions Users
 class PermissionsUser(APIView):
     def get(self, request, id):
         try:
@@ -2472,6 +2507,7 @@ class PermissionsUser(APIView):
             message = {"message": "Permission User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+# Role Users
 class RoleUser(APIView):
     def get(self, request, id):
         try:
