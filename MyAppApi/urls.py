@@ -8,6 +8,9 @@ urlpatterns = [
     # Home Page
     path('', views.index, name='index'),
 
+    # Dashboard Page
+    path('dashboard/', views.DashboardDetail.as_view(), name='DashboardDetail'),
+
     # CRUD Entities
     path('entities/', views.EntitiesDetail.as_view(), name='Entities_Detail'),
     path('entities/<int:id>/', views.EntitiesInfo.as_view(), name='Entities_Info'),

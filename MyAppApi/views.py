@@ -16,6 +16,7 @@ from django.db import connection
 from Project_SMS import settings
 from rest_framework import status
 from django.utils import timezone
+from django.db.models import Count
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 from rest_framework.views import APIView
@@ -159,6 +160,14 @@ Database = smsdb
 
 def index(request):
     return render(request, 'index.html')
+
+
+class DashboardDetail(APIView):
+    def get(self, request):
+        modem_counts = Log_Message.objects.values('Modem').annotate(count=Count('Modem'))
+        modem_count_list = [{'modem': f'Modem{item["Modem"]}', 'count': item['count']} for item in modem_counts]
+        return JsonResponse(modem_count_list, safe=False)
+
 
 
 def generate(self, tag):
