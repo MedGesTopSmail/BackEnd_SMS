@@ -168,7 +168,21 @@ class DashboardDetail(APIView):
         modem_count_list = [{'modem': f'Modem{item["Modem"]}', 'count': item['count']} for item in modem_counts]
         return JsonResponse(modem_count_list, safe=False)
 
-
+def count_rows_by_month(request):
+    current_year = datetime.now().year
+    counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem', 'created_at__month').annotate(count=Count('Id')).order_by('Modem', 'created_at__month')
+    modems = sorted(set(count['Modem'] for count in counts))
+    labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
+    data = {}
+    for modem in modems:
+        data[f"Modem {modem}"] = {label: 0 for label in labels}
+    for row in counts:
+        modem = row['Modem']
+        month = row['created_at__month']
+        count = row['count']
+        data[f"Modem {modem}"][labels[month - 1]] = count
+    # Now you can use the labels and data to populate your chart data
+    return JsonResponse({'data': data}, safe=False)
 
 def generate(self, tag):
     if tag.upper() == "ENT":
