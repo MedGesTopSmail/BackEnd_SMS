@@ -171,18 +171,20 @@ class DashboardDetail(APIView):
 def count_rows_by_month(request):
     current_year = datetime.now().year
     counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem', 'created_at__month').annotate(count=Count('Id')).order_by('Modem', 'created_at__month')
-    modems = sorted(set(count['Modem'] for count in counts))
+    status_modems = GetModems()
+    modems = sorted(set(count['ID'] for count in status_modems))
     labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
     data = {}
     for modem in modems:
         data[f"Modem {modem}"] = {label: 0 for label in labels}
     for row in counts:
         modem = row['Modem']
-        month = row['created_at__month']
-        count = row['count']
-        data[f"Modem {modem}"][labels[month - 1]] = count
+        if modem in modems:
+            month = row['created_at__month']
+            count = row['count']
+            data[f"Modem {modem}"][labels[month - 1]] = count
     # Now you can use the labels and data to populate your chart data
-    return JsonResponse({'data': data}, safe=False)
+    return JsonResponse(data, safe=False)
 
 def generate(self, tag):
     if tag.upper() == "ENT":
@@ -217,6 +219,20 @@ def generate(self, tag):
             "Directory_Number": Directory_Number,
         }
         return JsonResponse(data)
+
+def GetModems():
+    # Execute the SQL query
+    with connection.cursor() as cursor:
+        query = """ SELECT * FROM smsdb.phones """
+        cursor.execute(query)
+        phone_info = cursor.fetchall()
+
+    # Format the result as a list of dictionaries
+    columns = [col[0] for col in cursor.description]
+    phone_info = [dict(zip(columns, row)) for row in phone_info]
+
+    # Return the phone information as JSON
+    return phone_info
 
 
 # CRUD Entities
@@ -1300,15 +1316,7 @@ def logout(request):
 # Get Modem  (Phone Info)
 class Status(APIView):
     def get(self, request):
-        # Execute the SQL query
-        with connection.cursor() as cursor:
-            query = """ SELECT * FROM smsdb.phones """
-            cursor.execute(query)
-            phone_info = cursor.fetchall()
-
-        # Format the result as a list of dictionaries
-        columns = [col[0] for col in cursor.description]
-        phone_info = [dict(zip(columns, row)) for row in phone_info]
+        phone_info = GetModems()
 
         # Return the phone information as JSON
         return JsonResponse(phone_info, safe=False)
