@@ -162,39 +162,133 @@ def index(request):
     return render(request, 'index.html')
 
 
-class DashboardDetail(APIView):
+class DashboardMember(APIView):
+    def get(self, request, id):
+        modem_counts = self.count_message_modem_user(request, id)
+        total_message_count = self.count_message_user(request, id)
+        message_month_count = self.count_message_user_month(request, id)
+        message_week_count = self.count_message_user_week(request, id)
+        message_today_count = self.count_message_user_today(request, id)
+        last_sms = self.last_sms(request, id)
+
+        # Create a dictionary to hold all the counts and data
+        dashboard_data = {
+            'modem_counts': modem_counts,
+            'total_message_count': total_message_count,
+            'message_month_count': message_month_count,
+            'message_week_count': message_week_count,
+            'message_today_count': message_today_count,
+            'last_sms': last_sms
+        }
+
+        return JsonResponse(dashboard_data)
+
+    def count_message_modem_user(self, request, id):
+        modem_counts = Log_Message.objects.filter(User_id=id).values('Modem').annotate(count=Count('Modem'))
+        modem_count_list = [{'modem': f'Modem{item["Modem"]}', 'count': item['count']} for item in modem_counts]
+        return modem_count_list
+
+    def count_message_user(self, request, id):
+        return Log_Message.objects.filter(User_id=id).count()
+
+    def count_message_user_month(self, request, id):
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        return Log_Message.objects.filter(User_id=id, created_at__gte=thirty_days_ago).count()
+
+    def count_message_user_week(self, request, id):
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        return Log_Message.objects.filter(User_id=id, created_at__gte=seven_days_ago).count()
+
+    def count_message_user_today(self, request, id):
+        today = datetime.now().date()
+        return Log_Message.objects.filter(User_id=id, created_at__date=today).count()
+
+    def last_sms(self, request, id):
+        try:
+            obj = Log_Message.objects.filter(User_id=id).order_by('-created_at')[:5]
+            data = [
+                {
+                    "Recipient": item.Recipient,
+                    "Modem": item.Modem,
+                    "Type_Envoi": item.Type_Envoi,
+                    "Status": item.Status,
+                    "Message": item.Message,
+                    "Send_Back": item.Send_Back,
+                    "created_at": item.created_at,
+                    "updated_at": item.updated_at,
+                    "deleted_by": item.deleted_by,
+                    "deleted_at": item.deleted_at,
+                }
+                for item in obj
+            ]
+            return data
+        except Log_Message.DoesNotExist:
+            message = {"message": "Log_Message non trouvé"}
+            return message
+
+
+class DashboardAdmin(APIView):
     def get(self, request):
+        modem_counts = self.count_message_modem(request)
+        all_message_count = self.count_all_message()
+        all_sms_srl_count = self.count_all_sms_srl()
+        email_sms_count = self.count_email_sms()
+        monitoring_sms_count = self.count_monitoring_sms()
+        last_sms = self.last_sms()
+
+        # Create a dictionary to hold all the counts and data
+        dashboard_data = {
+            'modem_counts': modem_counts,
+            'all_message_count': all_message_count,
+            'all_sms_srl_count': all_sms_srl_count,
+            'email_sms_count': email_sms_count,
+            'monitoring_sms_count': monitoring_sms_count,
+            'last_five_sms': last_sms
+        }
+
+        return JsonResponse(dashboard_data)
+
+    def count_message_modem(self, request):
         modem_counts = Log_Message.objects.values('Modem').annotate(count=Count('Modem'))
         modem_count_list = [{'modem': f'Modem{item["Modem"]}', 'count': item['count']} for item in modem_counts]
-        return JsonResponse(modem_count_list, safe=False)
+        return modem_count_list
 
-def count_rows_by_month(request):
-    current_year = datetime.now().year
-    counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem', 'created_at__month').annotate(count=Count('Id')).order_by('Modem', 'created_at__month')
-    status_modems = GetModems()
-    modems = sorted(set(count['ID'] for count in status_modems))
-    labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
-    data = {}
-    for modem in modems:
-        data[f"Modem {modem}"] = {label: 0 for label in labels}
-    for row in counts:
-        modem = row['Modem']
-        if modem in modems:
-            month = row['created_at__month']
-            count = row['count']
-            data[f"Modem {modem}"][labels[month - 1]] = count
-    # Now you can use the labels and data to populate your chart data
-    return JsonResponse(data, safe=False)
+    def count_all_message(self):
+        return Log_Message.objects.count()
 
-def last_five_sms(request, id):
-    try:
-        obj = Log_Message.objects.filter(User=id).order_by('-created_at')[:5]
-        serializer = serializers.Log_MessageSerializer(obj, many=True)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
-    except Log_Message.DoesNotExist:
-        message = {"message": "Log_Message non trouvé"}
-        return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+    def count_all_sms_srl(self):
+        return Log_Message.objects.filter(
+            Type_Envoi__in=["Sms Avec Numero", "Sms Avec Repertoire", "Sms Avec Liste D'envoi"]).count()
+
+    def count_email_sms(self):
+        return Log_Message.objects.filter(Type_Envoi="EmailSms").count()
+
+    def count_monitoring_sms(self):
+        return Log_Message.objects.filter(Type_Envoi="Monitoring Sms").count()
+
+    def last_sms(self):
+        try:
+            obj = Log_Message.objects.order_by('-created_at')[:5]
+            data = [
+                {
+                    "Recipient": item.Recipient,
+                    "Modem": item.Modem,
+                    "Type_Envoi": item.Type_Envoi,
+                    "Status": item.Status,
+                    "Message": item.Message,
+                    "Send_Back": item.Send_Back,
+                    "created_at": item.created_at,
+                    "updated_at": item.updated_at,
+                    "deleted_by": item.deleted_by,
+                    "deleted_at": item.deleted_at,
+                }
+                for item in obj
+            ]
+            return data
+        except Log_Message.DoesNotExist:
+            message = {"message": "Log_Message non trouvé"}
+            return message, status.HTTP_404_NOT_FOUND
+
 
 def generate(self, tag):
     if tag.upper() == "ENT":
@@ -230,19 +324,7 @@ def generate(self, tag):
         }
         return JsonResponse(data)
 
-def GetModems():
-    # Execute the SQL query
-    with connection.cursor() as cursor:
-        query = """ SELECT * FROM smsdb.phones """
-        cursor.execute(query)
-        phone_info = cursor.fetchall()
 
-    # Format the result as a list of dictionaries
-    columns = [col[0] for col in cursor.description]
-    phone_info = [dict(zip(columns, row)) for row in phone_info]
-
-    # Return the phone information as JSON
-    return phone_info
 
 
 # CRUD Entities
@@ -1326,10 +1408,49 @@ def logout(request):
 # Get Modem  (Phone Info)
 class Status(APIView):
     def get(self, request):
-        phone_info = GetModems()
+        phone_info = self.GetModems()
+        sms_counts = self.count_sms_by_month(request)
+
+        # Create the final response data
+        data = {
+            'phone_info': phone_info,
+            'sms_counts': sms_counts,
+        }
+
+        # Return the data as JSON
+        return JsonResponse(data, safe=False)
+    def GetModems(self):
+        # Execute the SQL query
+        with connection.cursor() as cursor:
+            query = """ SELECT * FROM smsdb.phones """
+            cursor.execute(query)
+            phone_info = cursor.fetchall()
+
+        # Format the result as a list of dictionaries
+        columns = [col[0] for col in cursor.description]
+        phone_info = [dict(zip(columns, row)) for row in phone_info]
 
         # Return the phone information as JSON
-        return JsonResponse(phone_info, safe=False)
+        return phone_info
+
+    def count_sms_by_month(self, request):
+        current_year = datetime.now().year
+        counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem', 'created_at__month').annotate(
+            count=Count('Id')).order_by('Modem', 'created_at__month')
+        status_modems = self.GetModems()
+        modems = sorted(set(count['ID'] for count in status_modems))
+        labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
+        data = {}
+        for modem in modems:
+            data[f"Modem {modem}"] = {label: 0 for label in labels}
+        for row in counts:
+            modem = row['Modem']
+            if modem in modems:
+                month = row['created_at__month']
+                count = row['count']
+                data[f"Modem {modem}"][labels[month - 1]] = count
+        # Now you can use the labels and data to populate your chart data
+        return data
 
 
 # # Sending Normal Message with Gammu
@@ -2200,7 +2321,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Email Sms",
+#                                 Type_Envoi="Monitoring Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
 #                                 User_id=monitoring.get('Monitoring_Id'),
@@ -2211,7 +2332,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Email Sms",
+#                                 Type_Envoi="Monitoring Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
 #                                 User_id=monitoring.get('Monitoring_Id'),
@@ -2513,6 +2634,7 @@ class SmsNotSendInfo(APIView):
             message = {"message": "Message non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
 
+
 # Permissions Users
 class PermissionsUser(APIView):
     def get(self, request, id):
@@ -2547,6 +2669,7 @@ class PermissionsUser(APIView):
         except Permission_User.DoesNotExist:
             message = {"message": "Permission User non trouver"}
             return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 
 # Role Users
 class RoleUser(APIView):

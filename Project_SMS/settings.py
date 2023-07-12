@@ -80,7 +80,7 @@ PASSWORD_HASHERS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sms_platform',
+        'NAME': 'mysmsdb',
         'USER': 'root',
         'PASSWORD': 'ov16@',
         'HOST': 'localhost',
@@ -88,9 +88,9 @@ DATABASES = {
     },
     'second_db': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sms_db',
+        'NAME': 'smsdb',
         'USER': 'root',
-        'PASSWORD': 'ov16',
+        'PASSWORD': 'ov16@',
         'HOST': 'localhost',
         'PORT': '3306',
     }
