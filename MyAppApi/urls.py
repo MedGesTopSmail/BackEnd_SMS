@@ -11,6 +11,7 @@ urlpatterns = [
     # Dashboard Page
     path('dashboard/', views.DashboardDetail.as_view(), name='DashboardDetail'),
     path('count_rows/', views.count_rows_by_month, name='count_rows_by_month'),
+    path('last_five_sms/<int:id>/', views.last_five_sms, name='last_five_sms'),
 
     # CRUD Entities
     path('entities/', views.EntitiesDetail.as_view(), name='Entities_Detail'),

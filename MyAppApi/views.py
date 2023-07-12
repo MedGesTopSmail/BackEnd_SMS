@@ -186,6 +186,16 @@ def count_rows_by_month(request):
     # Now you can use the labels and data to populate your chart data
     return JsonResponse(data, safe=False)
 
+def last_five_sms(request, id):
+    try:
+        obj = Log_Message.objects.filter(User=id).order_by('-created_at')[:5]
+        serializer = serializers.Log_MessageSerializer(obj, many=True)
+        data = serializer.data
+        return JsonResponse(data, safe=False)
+    except Log_Message.DoesNotExist:
+        message = {"message": "Log_Message non trouvé"}
+        return JsonResponse(message, status=status.HTTP_404_NOT_FOUND)
+
 def generate(self, tag):
     if tag.upper() == "ENT":
         Entity_Number = tag.upper() + f'{random.randint(0, 9999):04}'
