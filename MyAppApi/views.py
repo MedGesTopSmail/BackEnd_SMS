@@ -261,7 +261,7 @@ class DashboardAdmin(APIView):
             Type_Envoi__in=["Sms Avec Numero", "Sms Avec Repertoire", "Sms Avec Liste D'envoi"]).count()
 
     def count_email_sms(self):
-        return Log_Message.objects.filter(Type_Envoi="EmailSms").count()
+        return Log_Message.objects.filter(Type_Envoi="Email Sms").count()
 
     def count_monitoring_sms(self):
         return Log_Message.objects.filter(Type_Envoi="Monitoring Sms").count()
@@ -323,8 +323,6 @@ def generate(self, tag):
             "Directory_Number": Directory_Number,
         }
         return JsonResponse(data)
-
-
 
 
 # CRUD Entities
