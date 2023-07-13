@@ -1453,7 +1453,7 @@ class Status(APIView):
         return data
 
 
-# # Sending Normal Message with Gammu
+# Sending Normal Message with Gammu
 # class Send_Normal_Sms(APIView):
 #     def post(self, request):
 #         Numbers_Liste = request.data['Numbers']
@@ -2112,6 +2112,7 @@ class Status(APIView):
 #         }
 #         return JsonResponse(response)
 #
+#
 # # Sending Sms Email
 # @csrf_exempt
 # def Send_Email_Sms(request, email, password, numbers, message):
@@ -2321,7 +2322,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Monitoring Sms",
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Envoyer",
 #                                 Message=message,
 #                                 User_id=monitoring.get('Monitoring_Id'),
@@ -2332,7 +2333,7 @@ class Status(APIView):
 #                             log_message = Log_Message(
 #                                 Recipient=number,
 #                                 Modem=str(config_index + 1),
-#                                 Type_Envoi="Monitoring Sms",
+#                                 Type_Envoi="Email Sms",
 #                                 Status="Non Envoyer",
 #                                 Message=message,
 #                                 User_id=monitoring.get('Monitoring_Id'),
@@ -2400,109 +2401,78 @@ class EmailToSms(APIView):
         return JsonResponse(data, safe=False)
 
     def post(self, request):
-        # Variable for Configuration Server
-        client = request.data['Client']
-        host_name = request.data['HostName']
-        email_server = request.data['Email_Server']
-        password_server = request.data['Password_Server']
-        port = request.data['Port']
-
-        # Variable for Configuration User
-        email_user = request.data['Email_User']
-        password_user = request.data['Password_User']
-        recipient = request.data['Recipient']
-        reload_time = request.data['Reload_Time']
-
-        response_data = {}
         try:
-            # Clear the Email_To_Sms table
-            Email_To_Sms.objects.all().delete()
+            # Variable for Configuration Server
+            client = request.data['Client']
+            host_name = request.data['HostName']
+            email_server = request.data['Email_Server']
+            password_server = request.data['Password_Server']
+            port = request.data['Port']
+
+            # Variable for Configuration User
+            email_user = request.data['Email_User']
+            password_user = request.data['Password_User']
+            recipient = request.data['Recipient']
+            reload_time = request.data['Reload_Time']
 
             if client == "imap":
                 # Execute the script for IMAP
                 script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
-
-                # Schedule the cron job
-                cron = CronTab(user='apache')  # Replace 'your_username' with your username
-                job = cron.new(command=command)
-                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
-                cron.write()
-
-                email_to_sms = Email_To_Sms(
-                    Client=client,
-                    HostName=host_name,
-                    Email_Server=email_server,
-                    Password_Server=password_server,
-                    Port=port,
-                    Recipient=recipient,
-                    Email_User=email_user,
-                    Password_User=password_user,
-                    Reload_Time=reload_time
-                )
-                email_to_sms.save()
-
-                response_data["type"] = "success"
-                response_data["message"] = "Scripts IMAP a été exécuté avec succès."
             elif client == "pop3":
                 # Execute the script for POP3
                 script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
-
-                # Schedule the cron job
-                cron = CronTab(user='apache')  # Replace 'your_username' with your username
-                job = cron.new(command=command)
-                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
-                cron.write()
-
-                email_to_sms = Email_To_Sms(
-                    Client=client,
-                    HostName=host_name,
-                    Email_Server=email_server,
-                    Password_Server=password_server,
-                    Port=port,
-                    Recipient=recipient,
-                    Email_User=email_user,
-                    Password_User=password_user,
-                    Reload_Time=reload_time
-                )
-                email_to_sms.save()
-
-                response_data["type"] = "success"
-                response_data["message"] = "Scripts POP3 a été exécuté avec succès."
             else:
                 # Execute the script for OWA
                 script_path = "/home/mysms/backend/addon/mail_to_sms/myowalib.py"
-                command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
 
-                # Schedule the cron job
-                cron = CronTab(user='apache')  # Replace 'your_username' with your username
-                job = cron.new(command=command)
-                job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
-                cron.write()
+            # Command for executing the script
+            command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
 
-                email_to_sms = Email_To_Sms(
-                    Client=client,
-                    HostName=host_name,
-                    Email_Server=email_server,
-                    Password_Server=password_server,
-                    Port=port,
-                    Recipient=recipient,
-                    Email_User=email_user,
-                    Password_User=password_user,
-                    Reload_Time=reload_time
-                )
-                email_to_sms.save()
+            # Schedule the cron job
+            cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
+            job = cron.new(command=command)
+            job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
+            cron.write()
 
-                response_data["type"] = "success"
-                response_data["message"] = "Scripts OWA a été exécuté avec succès."
+            email_to_sms = Email_To_Sms(
+                Client=client,
+                HostName=host_name,
+                Email_Server=email_server,
+                Password_Server=password_server,
+                Port=port,
+                Recipient=recipient,
+                Email_User=email_user,
+                Password_User=password_user,
+                Reload_Time=reload_time
+            )
+            email_to_sms.save()
 
+            response_data = {
+                "type": "success",
+                "message": f"Email vers Sms exécuté avec succès."
+            }
         except Exception as e:
-            response_data["type"] = "error"
-            response_data["message"] = str(e)
+            response_data = {
+                "type": "error",
+                "message": str(e)
+            }
 
         return JsonResponse(response_data)
 
+    def delete(self, request):
+        # Clear the Email_To_Sms table
+        Email_To_Sms.objects.all().delete()
+
+        # Clear the cron jobs
+        cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
+        cron.remove_all()
+        cron.write()
+
+        response_data = {
+            "type": "success",
+            "message": "Configuration cleared, all rows deleted, and cron jobs removed.",
+        }
+        return JsonResponse(response_data)
 
 # Send Back Sms Not Send
 class SmsNotSendDetail(APIView):
