@@ -60,14 +60,14 @@ urlpatterns = [
     # path('send_monitoring_sms/<str:email>/<str:password>/<str:numbers>/<str:message>/', csrf_exempt(views.Send_Monitoring_Sms),name='Send_Monitoring_Sms'),
 
     # Sms Not Send
-    path('sms_not_send/', views.SmsNotSendDetail.as_view(), name='sms_not_send'),
-    path('sms_not_send/<int:id>/', views.SmsNotSendInfo.as_view(), name='sms_not_send'),
+    # path('sms_not_send/', views.SmsNotSendDetail.as_view(), name='sms_not_send'),
+    # path('sms_not_send/<int:id>/', views.SmsNotSendInfo.as_view(), name='sms_not_send'),
 
     # Email to Sms
-    path('email_to_sms/', views.EmailToSms.as_view(), name='email_to_sms'),
+    # path('email_to_sms/', views.EmailToSms.as_view(), name='email_to_sms'),
 
     # Info Modem Gammu
-    path('status/', views.Status.as_view(), name='Status'),
+    # path('status/', views.Status.as_view(), name='Status'),
 
     # Permission User
     path('permission_user/<int:id>/', views.PermissionsUser.as_view(), name='permission_user'),
