@@ -4,7 +4,7 @@ import csv
 import ast
 import pytz
 import time
-# import gammu
+#import gammu
 import base64
 import random
 import tempfile
@@ -1403,55 +1403,120 @@ def logout(request):
     return JsonResponse(message)
 
 
-# Get Modem  (Phone Info)
-class Status(APIView):
-    def get(self, request):
-        phone_info = self.GetModems()
-        sms_counts = self.count_sms_by_month(request)
+# # Get Modem  (Phone Info)
+# class Status(APIView):
+#     def get(self, request):
+#         modem_statuses = self.get_modem_statuses()
+#         sms_by_month = self.count_sms_by_month()
+#         data = {
+#             "modem_statuses": modem_statuses,
+#             "sms_by_month": sms_by_month
+#         }
+#         return JsonResponse(data)
+#
+#     def get_modem_statuses(self):
+#         modem_statuses = []
+#         # Define a list of configuration contents
+#         config_contents = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3, CONFIG_CONTENT_4]
+#         for index, config_content in enumerate(config_contents):
+#             # Create a temporary file for the configuration
+#             temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#             temp_config_file.write(config_content.encode())
+#             temp_config_file.close()
+#
+#             # Create an object for talking with the phone
+#             state_machine = gammu.StateMachine()
+#             # Read the configuration from the given file
+#             state_machine.ReadConfig(Filename=temp_config_file.name)
+#             # Connect to the phone
+#             state_machine.Init()
+#
+#             # Get network operator name, IMEI, and signal strength
+#             operator_name, imei, signal_percent = self.get_network_info(state_machine)
+#
+#             # Get network name from database based on IMEI
+#             netname = self.get_network_name(imei)
+#
+#             # Get the modem count for the current modem
+#             modem_count = self.count_message_modem(index + 1)
+#
+#             # Create a dictionary with the modem status
+#             modem_status = {
+#                 "modem": index + 1,
+#                 "operator_name": netname,
+#                 "imei": imei,
+#                 "signal_percent": signal_percent,
+#                 "Send": modem_count,
+#                 "Receive": 0,
+#             }
+#
+#             # Append the modem status to the list
+#             modem_statuses.append(modem_status)
+#
+#             # Delete the temporary config file
+#             os.remove(temp_config_file.name)
+#
+#         return modem_statuses
+#
+#     def get_network_info(self, state_machine):
+#         network_info = state_machine.GetNetworkInfo()
+#         operator_name = network_info.get('NetworkName')
+#
+#         # Get the IMEI
+#         imei = state_machine.GetIMEI()
+#
+#         signal_info = state_machine.GetSignalQuality()
+#         signal_percent = signal_info.get('SignalPercent')
+#         return operator_name, imei, signal_percent
+#
+#     def get_network_name(self, imei):
+#         # Query the smsd.phone database to get the network name based on IMEI
+#         with connection.cursor() as cursor:
+#             cursor.execute("SELECT NetName FROM smsdb.phones WHERE IMEI = %s", [imei])
+#             result = cursor.fetchone()
+#             network_name = result[0] if result else ""
+#         return network_name
+#
+#     def count_message_modem(self, modem):
+#         modem_count = Log_Message.objects.filter(Modem=modem).aggregate(count=Count('Modem'))
+#         return modem_count['count']
+#
+#     def GetModems(self):
+#         # Execute the SQL query
+#         with connection.cursor() as cursor:
+#             query = """ SELECT * FROM smsdb.phones """
+#             cursor.execute(query)
+#             phone_info = cursor.fetchall()
+#
+#         # Format the result as a list of dictionaries
+#         columns = [col[0] for col in cursor.description]
+#         phone_info = [dict(zip(columns, row)) for row in phone_info]
+#
+#         # Return the phone information as JSON
+#         return phone_info
+#
+#     def count_sms_by_month(self):
+#         current_year = datetime.now().year
+#         counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem',
+#                                                                                   'created_at__month').annotate(
+#             count=Count('Id')).order_by('Modem', 'created_at__month')
+#         status_modems = self.GetModems()
+#         modems = sorted(set(count['ID'] for count in status_modems))
+#         labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
+#         sms_by_month_list = {}
+#         for modem in modems:
+#             sms_by_month_list[f"Modem {modem}"] = {label: 0 for label in labels}
+#         for row in counts:
+#             modem = row['Modem']
+#             if modem in modems:
+#                 month = row['created_at__month']
+#                 count = row['count']
+#                 sms_by_month_list[f"Modem {modem}"][labels[month - 1]] = count
+#         # Now you can use the labels and data to populate your chart data
+#         return sms_by_month_list
 
-        # Create the final response data
-        data = {
-            'phone_info': phone_info,
-            'sms_counts': sms_counts,
-        }
 
-        # Return the data as JSON
-        return JsonResponse(data, safe=False)
-    def GetModems(self):
-        # Execute the SQL query
-        with connection.cursor() as cursor:
-            query = """ SELECT * FROM smsdb.phones """
-            cursor.execute(query)
-            phone_info = cursor.fetchall()
-
-        # Format the result as a list of dictionaries
-        columns = [col[0] for col in cursor.description]
-        phone_info = [dict(zip(columns, row)) for row in phone_info]
-
-        # Return the phone information as JSON
-        return phone_info
-
-    def count_sms_by_month(self, request):
-        current_year = datetime.now().year
-        counts = Log_Message.objects.filter(created_at__year=current_year).values('Modem', 'created_at__month').annotate(
-            count=Count('Id')).order_by('Modem', 'created_at__month')
-        status_modems = self.GetModems()
-        modems = sorted(set(count['ID'] for count in status_modems))
-        labels = [datetime.strptime(f'2023-{month}-01', '%Y-%m-%d').strftime('%b') for month in range(1, 13)]
-        data = {}
-        for modem in modems:
-            data[f"Modem {modem}"] = {label: 0 for label in labels}
-        for row in counts:
-            modem = row['Modem']
-            if modem in modems:
-                month = row['created_at__month']
-                count = row['count']
-                data[f"Modem {modem}"][labels[month - 1]] = count
-        # Now you can use the labels and data to populate your chart data
-        return data
-
-
-# Sending Normal Message with Gammu
+# # Sending Normal Message with Gammu
 # class Send_Normal_Sms(APIView):
 #     def post(self, request):
 #         Numbers_Liste = request.data['Numbers']
@@ -2072,7 +2137,7 @@ class Status(APIView):
 #                         config_index = (config_index + 1) % total_configs
 #
 #                     except Exception as e:
-#                     # Add log message
+#                         # Add log message
 #                         log_message = Log_Message(
 #                             Recipient=number,
 #                             Modem=str(config_index + 1),
@@ -2212,7 +2277,7 @@ class Status(APIView):
 #                         config_index = (config_index + 1) % total_configs
 #
 #                     except Exception as e:
-#                     # Add log message
+#                         # Add log message
 #                         log_message = Log_Message(
 #                             Recipient=number,
 #                             Modem=str(config_index + 1),
@@ -2249,6 +2314,7 @@ class Status(APIView):
 #             "message": "Email incorrect",
 #         }
 #         return JsonResponse(response)
+#
 #
 # # Sending Sms Monitoring
 # @csrf_exempt
@@ -2351,7 +2417,7 @@ class Status(APIView):
 #                         config_index = (config_index + 1) % total_configs
 #
 #                     except Exception as e:
-#                     # Add log message
+#                         # Add log message
 #                         log_message = Log_Message(
 #                             Recipient=number,
 #                             Modem=str(config_index + 1),
@@ -2388,200 +2454,202 @@ class Status(APIView):
 #             "message": "Email incorrect",
 #         }
 #         return JsonResponse(response)
-
-class EmailToSms(APIView):
-    def get(self, request):
-        obj = Email_To_Sms.objects
-        serializer = serializers.Email_To_SmsSerializer(obj, many=True)
-        data = serializer.data[0]
-        # Convert String to List
-        data["Recipient"] = ast.literal_eval(data.get("Recipient"))
-        return JsonResponse(data, safe=False)
-
-    def post(self, request):
-        try:
-            # Variable for Configuration Server
-            client = request.data['Client']
-            host_name = request.data['HostName']
-            email_server = request.data['Email_Server']
-            password_server = request.data['Password_Server']
-            port = request.data['Port']
-
-            # Variable for Configuration User
-            email_user = request.data['Email_User']
-            password_user = request.data['Password_User']
-            recipient = request.data['Recipient']
-            reload_time = request.data['Reload_Time']
-
-            if client == "imap":
-                # Execute the script for IMAP
-                script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
-            elif client == "pop3":
-                # Execute the script for POP3
-                script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
-            else:
-                # Execute the script for OWA
-                script_path = "/home/mysms/backend/addon/mail_to_sms/myowalib.py"
-
-            # Command for executing the script
-            command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
-
-            # Schedule the cron job
-            cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
-            job = cron.new(command=command)
-            job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
-            cron.write()
-
-            email_to_sms = Email_To_Sms(
-                Client=client,
-                HostName=host_name,
-                Email_Server=email_server,
-                Password_Server=password_server,
-                Port=port,
-                Recipient=recipient,
-                Email_User=email_user,
-                Password_User=password_user,
-                Reload_Time=reload_time
-            )
-            email_to_sms.save()
-
-            response_data = {
-                "type": "success",
-                "message": f"Email vers Sms exécuté avec succès."
-            }
-        except Exception as e:
-            response_data = {
-                "type": "error",
-                "message": str(e)
-            }
-
-        return JsonResponse(response_data)
-
-    def delete(self, request):
-        # Clear the Email_To_Sms table
-        Email_To_Sms.objects.all().delete()
-
-        # Clear the cron jobs
-        cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
-        cron.remove_all()
-        cron.write()
-
-        response_data = {
-            "type": "success",
-            "message": "Configuration cleared, all rows deleted, and cron jobs removed.",
-        }
-        return JsonResponse(response_data)
-
-# Send Back Sms Not Send
-class SmsNotSendDetail(APIView):
-    def get(self, request):
-        obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True)
-        serializer = Log_MessageSerializer(obj, many=True)
-        data = serializer.data
-        return JsonResponse(data, safe=False)
-
-    # def post(self, request):
-    #     Number = request.data["Number"]
-    #     Message = request.data["Message"]
-    #     User = request.data["User"]
-    #     Sms = request.data["Sms"]
-    #
-    #     obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=Sms)
-    #     obj.Send_Back = 'True'  # Set Send_Back to False
-    #     serializer = Log_MessageSerializer(obj, data=request.data, partial=True)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #
-    #     config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
-    #     total_configs = len(config_files)
-    #     config_index = 0
-    #
-    #     try:
-    #         # Get the current configuration content
-    #         config_content = config_files[config_index]
-    #
-    #         # Create a temporary file for the configuration
-    #         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
-    #         temp_config_file.write(config_content.encode())
-    #         temp_config_file.close()
-    #
-    #         # Create object for talking with the phone
-    #         state_machine = gammu.StateMachine()
-    #
-    #         # Read the configuration from the given file
-    #         state_machine.ReadConfig(Filename=temp_config_file.name)
-    #
-    #         # Connect to the phone
-    #         state_machine.Init()
-    #
-    #         if len(Message) <= 160:
-    #             sms = {
-    #                 "Text": Message,
-    #                 "SMSC": {"Location": 1},
-    #                 "Number": Number,
-    #                 "Coding": "Unicode_No_Compression"
-    #             }
-    #             result = state_machine.SendSMS(sms)
-    #         else:
-    #             smsinfo = {
-    #                 "Class": -1,
-    #                 "Unicode": True,
-    #                 "Entries": [
-    #                     {
-    #                         "ID": "ConcatenatedTextLong",
-    #                         "Buffer": Message
-    #                     }
-    #                 ],
-    #             }
-    #             encoded = gammu.EncodeSMS(smsinfo)
-    #             for msg in encoded:
-    #                 msg["SMSC"] = {"Location": 1}
-    #                 msg["Number"] = Number
-    #                 result = state_machine.SendSMS(msg)
-    #
-    #         if result:
-    #             # Add log message
-    #             log_message = Log_Message(
-    #                 Recipient=Number,
-    #                 Modem=str(config_index + 1),
-    #                 Type_Envoi="Sms Renvoyer",
-    #                 Status="Envoyer",
-    #                 Message=Message,
-    #                 User_id=User
-    #             )
-    #             log_message.save()
-    #             response = {
-    #                 "type": "success",
-    #                 "message": "Message envoyé pour le numéro " + Number,
-    #             }
-    #         else:
-    #             # Add log message
-    #             log_message = Log_Message(
-    #                 Recipient=Number,
-    #                 Modem=str(config_index + 1),
-    #                 Type_Envoi="Sms Renvoyer",
-    #                 Status="Non Envoyer",
-    #                 Message=Message,
-    #                 User_id=User
-    #             )
-    #             log_message.save()
-    #             response = {
-    #                 "type": "error",
-    #                 "message": "Message non envoyé pour le numéro " + Number,
-    #             }
-    #
-    #         state_machine.Terminate()
-    #         # Delete the temporary configuration file
-    #         os.remove(temp_config_file.name)
-    #
-    #         return JsonResponse(response)
-    #
-    #     except Exception as e:
-    #         response = {
-    #             "type": "error",
-    #             "message":str(e),
-    #         }
-    #         return JsonResponse(response)
+#
+#
+# class EmailToSms(APIView):
+#     def get(self, request):
+#         obj = Email_To_Sms.objects
+#         serializer = serializers.Email_To_SmsSerializer(obj, many=True)
+#         data = serializer.data[0]
+#         # Convert String to List
+#         data["Recipient"] = ast.literal_eval(data.get("Recipient"))
+#         return JsonResponse(data, safe=False)
+#
+#     def post(self, request):
+#         try:
+#             # Variable for Configuration Server
+#             client = request.data['Client']
+#             host_name = request.data['HostName']
+#             email_server = request.data['Email_Server']
+#             password_server = request.data['Password_Server']
+#             port = request.data['Port']
+#
+#             # Variable for Configuration User
+#             email_user = request.data['Email_User']
+#             password_user = request.data['Password_User']
+#             recipient = request.data['Recipient']
+#             reload_time = request.data['Reload_Time']
+#
+#             if client == "imap":
+#                 # Execute the script for IMAP
+#                 script_path = "/home/mysms/backend/addon/mail_to_sms/myimaplib.py"
+#             elif client == "pop3":
+#                 # Execute the script for POP3
+#                 script_path = "/home/mysms/backend/addon/mail_to_sms/mypoplib.py"
+#             else:
+#                 # Execute the script for OWA
+#                 script_path = "/home/mysms/backend/addon/mail_to_sms/myowalib.py"
+#
+#             # Command for executing the script
+#             command = f"python {script_path} {host_name} {port} {email_server} {password_server} {email_user} {password_user} {recipient} {reload_time}"
+#
+#             # Schedule the cron job
+#             cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
+#             job = cron.new(command=command)
+#             job.minute.every(int(reload_time))  # Schedule job to run every 'reload_time' minutes
+#             cron.write()
+#
+#             email_to_sms = Email_To_Sms(
+#                 Client=client,
+#                 HostName=host_name,
+#                 Email_Server=email_server,
+#                 Password_Server=password_server,
+#                 Port=port,
+#                 Recipient=recipient,
+#                 Email_User=email_user,
+#                 Password_User=password_user,
+#                 Reload_Time=reload_time
+#             )
+#             email_to_sms.save()
+#
+#             response_data = {
+#                 "type": "success",
+#                 "message": f"Email vers Sms exécuté avec succès."
+#             }
+#         except Exception as e:
+#             response_data = {
+#                 "type": "error",
+#                 "message": str(e)
+#             }
+#
+#         return JsonResponse(response_data)
+#
+#     def delete(self, request):
+#         # Clear the Email_To_Sms table
+#         Email_To_Sms.objects.all().delete()
+#
+#         # Clear the cron jobs
+#         cron = CronTab(user='apache')  # Replace 'apache' with the appropriate user
+#         cron.remove_all()
+#         cron.write()
+#
+#         response_data = {
+#             "type": "success",
+#             "message": "Configuration cleared, all rows deleted, and cron jobs removed.",
+#         }
+#         return JsonResponse(response_data)
+#
+#
+# # Send Back Sms Not Send
+# class SmsNotSendDetail(APIView):
+#     def get(self, request):
+#         obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True)
+#         serializer = Log_MessageSerializer(obj, many=True)
+#         data = serializer.data
+#         return JsonResponse(data, safe=False)
+#
+#     # def post(self, request):
+#     #     Number = request.data["Number"]
+#     #     Message = request.data["Message"]
+#     #     User = request.data["User"]
+#     #     Sms = request.data["Sms"]
+#     #
+#     #     obj = Log_Message.objects.filter(Status="Non Envoyer", Send_Back__isnull=True).get(Id=Sms)
+#     #     obj.Send_Back = 'True'  # Set Send_Back to False
+#     #     serializer = Log_MessageSerializer(obj, data=request.data, partial=True)
+#     #     if serializer.is_valid():
+#     #         serializer.save()
+#     #
+#     #     config_files = [CONFIG_CONTENT_1, CONFIG_CONTENT_2, CONFIG_CONTENT_3]
+#     #     total_configs = len(config_files)
+#     #     config_index = 0
+#     #
+#     #     try:
+#     #         # Get the current configuration content
+#     #         config_content = config_files[config_index]
+#     #
+#     #         # Create a temporary file for the configuration
+#     #         temp_config_file = tempfile.NamedTemporaryFile(delete=False)
+#     #         temp_config_file.write(config_content.encode())
+#     #         temp_config_file.close()
+#     #
+#     #         # Create object for talking with the phone
+#     #         state_machine = gammu.StateMachine()
+#     #
+#     #         # Read the configuration from the given file
+#     #         state_machine.ReadConfig(Filename=temp_config_file.name)
+#     #
+#     #         # Connect to the phone
+#     #         state_machine.Init()
+#     #
+#     #         if len(Message) <= 160:
+#     #             sms = {
+#     #                 "Text": Message,
+#     #                 "SMSC": {"Location": 1},
+#     #                 "Number": Number,
+#     #                 "Coding": "Unicode_No_Compression"
+#     #             }
+#     #             result = state_machine.SendSMS(sms)
+#     #         else:
+#     #             smsinfo = {
+#     #                 "Class": -1,
+#     #                 "Unicode": True,
+#     #                 "Entries": [
+#     #                     {
+#     #                         "ID": "ConcatenatedTextLong",
+#     #                         "Buffer": Message
+#     #                     }
+#     #                 ],
+#     #             }
+#     #             encoded = gammu.EncodeSMS(smsinfo)
+#     #             for msg in encoded:
+#     #                 msg["SMSC"] = {"Location": 1}
+#     #                 msg["Number"] = Number
+#     #                 result = state_machine.SendSMS(msg)
+#     #
+#     #         if result:
+#     #             # Add log message
+#     #             log_message = Log_Message(
+#     #                 Recipient=Number,
+#     #                 Modem=str(config_index + 1),
+#     #                 Type_Envoi="Sms Renvoyer",
+#     #                 Status="Envoyer",
+#     #                 Message=Message,
+#     #                 User_id=User
+#     #             )
+#     #             log_message.save()
+#     #             response = {
+#     #                 "type": "success",
+#     #                 "message": "Message envoyé pour le numéro " + Number,
+#     #             }
+#     #         else:
+#     #             # Add log message
+#     #             log_message = Log_Message(
+#     #                 Recipient=Number,
+#     #                 Modem=str(config_index + 1),
+#     #                 Type_Envoi="Sms Renvoyer",
+#     #                 Status="Non Envoyer",
+#     #                 Message=Message,
+#     #                 User_id=User
+#     #             )
+#     #             log_message.save()
+#     #             response = {
+#     #                 "type": "error",
+#     #                 "message": "Message non envoyé pour le numéro " + Number,
+#     #             }
+#     #
+#     #         state_machine.Terminate()
+#     #         # Delete the temporary configuration file
+#     #         os.remove(temp_config_file.name)
+#     #
+#     #         return JsonResponse(response)
+#     #
+#     #     except Exception as e:
+#     #         response = {
+#     #             "type": "error",
+#     #             "message":str(e),
+#     #         }
+#     #         return JsonResponse(response)
 
 
 class SmsNotSendInfo(APIView):
